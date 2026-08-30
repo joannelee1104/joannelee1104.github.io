@@ -245,8 +245,36 @@
   /* ---------- 播放器外框 ---------- */
   .stage-wrap{
     width:100%;
-    max-width:920px;
+    max-width:1180px;
     position:relative;
+  }
+
+  /* 寬螢幕（桌面/平板）：影片與決策卡片左右並排，不用一路往下捲動才能作答。
+     手機等窄螢幕維持原本的垂直堆疊（見下方 max-width:820px 媒體查詢內的還原規則）。 */
+  @media (min-width: 821px){
+    .stage-wrap{
+      display:flex;
+      align-items:flex-start;
+      gap:20px;
+    }
+    .stage-wrap .stage{
+      flex:0 0 58%;
+      max-width:58%;
+    }
+    .stage-wrap .decision-layer,
+    .stage-wrap .result-layer{
+      flex:1 1 auto;
+      min-width:0;
+      max-width:none;
+      margin-top:0;
+      max-height:none;
+      align-self:stretch;
+    }
+    /* 桌面版右側欄空間有限，選項固定單欄排列比多欄更易讀，
+       也避免 auto-fit 在中等寬度下擠成很窄的欄位 */
+    .stage-wrap .decision-options{
+      grid-template-columns:1fr;
+    }
   }
 
   .stage{
