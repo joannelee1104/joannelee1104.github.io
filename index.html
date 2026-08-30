@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>資安事件應變演練｜遭遇入侵時，你的第一個決定</title>
+<title>資安事件應變演練｜多情境決策訓練</title>
 <style>
   :root{
     --void:#05070a;
@@ -14,7 +14,6 @@
     --warn-amber:#ffb547;
     --crit-red:#ff4d5e;
     --crit-red-dim:#7a1620;
-    --bsod-blue:#1b3a8c;
     --text-hi:#eaf2f6;
     --text-mid:#94a8b8;
     --text-dim:#4f6072;
@@ -39,6 +38,109 @@
     padding:32px 16px 80px;
   }
 
+  /* ---------- 登入畫面 ---------- */
+  .login-screen{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(31,138,94,.12), transparent 55%),
+      radial-gradient(ellipse at 80% 80%, rgba(255,181,71,.08), transparent 50%),
+      var(--void);
+  }
+  .login-screen.hidden{ display:none; }
+
+  .login-card{
+    width:100%;
+    max-width:420px;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:12px;
+    padding:36px 32px;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.7);
+  }
+
+  .login-tag{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.16em;
+    color:var(--ok-green);
+    text-transform:uppercase;
+    margin-bottom:16px;
+  }
+  .login-tag::before{ content:"● "; }
+
+  .login-title{
+    font-size:clamp(24px,4.6vw,32px);
+    font-weight:700;
+    line-height:1.4;
+    margin-bottom:12px;
+  }
+
+  .login-desc{
+    font-size:16px;
+    color:var(--text-mid);
+    line-height:1.7;
+    margin-bottom:26px;
+  }
+
+  .login-form{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+
+  .login-field{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .login-field span{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.06em;
+    color:var(--text-mid);
+  }
+  .login-field input{
+    font-family:var(--sans);
+    font-size:17px;
+    color:var(--text-hi);
+    background:rgba(255,255,255,.03);
+    border:1px solid var(--panel-line);
+    border-radius:6px;
+    padding:11px 13px;
+    outline:none;
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .login-field input:focus{
+    border-color:var(--ok-green);
+    background:rgba(62,242,160,.04);
+  }
+  .login-field input::placeholder{ color:var(--text-dim); }
+
+  .login-submit{
+    margin-top:6px;
+    width:100%;
+    padding:13px;
+    font-size:16px;
+  }
+
+  .login-error{
+    margin-top:14px;
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:#ffb9c0;
+    background:rgba(255,77,94,.08);
+    border:1px solid rgba(255,77,94,.35);
+    border-radius:6px;
+    padding:10px 13px;
+    text-align:center;
+  }
+
   /* ---------- 頂部標頭 ---------- */
   .masthead{
     width:100%;
@@ -48,7 +150,7 @@
     justify-content:space-between;
     border-bottom:1px solid var(--panel-line);
     padding-bottom:16px;
-    margin-bottom:28px;
+    margin-bottom:20px;
     font-family:var(--mono);
   }
   .masthead .tag{
@@ -57,35 +159,87 @@
     color:var(--ok-green);
     text-transform:uppercase;
   }
-  .masthead .tag::before{
-    content:"● ";
-  }
+  .masthead .tag::before{ content:"● "; }
   .masthead .clock{
     font-size:11px;
     color:var(--text-dim);
     letter-spacing:.1em;
   }
 
+  /* ---------- 關卡進度列 ---------- */
+  .stage-progress{
+    width:100%;
+    max-width:920px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:24px;
+    font-family:var(--mono);
+  }
+  .stage-progress .step-label{
+    font-size:11px;
+    color:var(--text-mid);
+    letter-spacing:.08em;
+    white-space:nowrap;
+    margin-right:4px;
+  }
+  .stage-dots{
+    display:flex;
+    gap:6px;
+    flex:1;
+  }
+  .stage-dot{
+    flex:1;
+    height:4px;
+    border-radius:3px;
+    background:var(--panel-line);
+    position:relative;
+    overflow:hidden;
+  }
+  .stage-dot.done{ background:var(--ok-green-dim); }
+  .stage-dot.done::after{
+    content:"";
+    position:absolute; inset:0;
+    background:var(--ok-green);
+  }
+  .stage-dot.current{ background:var(--panel-line); }
+  .stage-dot.current::after{
+    content:"";
+    position:absolute; inset:0;
+    background:var(--warn-amber);
+    animation:dotpulse 1.4s ease-in-out infinite;
+  }
+  @keyframes dotpulse{
+    0%,100%{ opacity:1; }
+    50%{ opacity:.35; }
+  }
+  .stage-dot.fail{ background:var(--crit-red-dim); }
+  .stage-dot.fail::after{
+    content:"";
+    position:absolute; inset:0;
+    background:var(--crit-red);
+  }
+
   .hero{
     width:100%;
     max-width:920px;
-    margin-bottom:28px;
+    margin-bottom:24px;
   }
   .hero h1{
     font-family:var(--sans);
     font-weight:700;
-    font-size:clamp(24px,4vw,38px);
-    line-height:1.25;
+    font-size:clamp(27px,4.8vw,41px);
+    line-height:1.28;
     letter-spacing:-.01em;
-    max-width:18ch;
+    max-width:22ch;
   }
   .hero h1 .accent{ color:var(--warn-amber); }
   .hero p{
-    margin-top:12px;
+    margin-top:10px;
     color:var(--text-mid);
-    font-size:15px;
+    font-size:18px;
     line-height:1.7;
-    max-width:56ch;
+    max-width:58ch;
   }
 
   /* ---------- 播放器外框 ---------- */
@@ -114,7 +268,6 @@
     background:#000;
   }
 
-  /* scanline / crt vignette overlay, always on, subtle */
   .stage::after{
     content:"";
     position:absolute; inset:0;
@@ -141,9 +294,7 @@
     pointer-events:none;
     transition:opacity .4s ease;
   }
-  .hud-top .rec{
-    display:flex; align-items:center; gap:6px;
-  }
+  .hud-top .rec{ display:flex; align-items:center; gap:6px; }
   .hud-top .rec .dot{
     width:7px; height:7px; border-radius:50%;
     background:var(--crit-red);
@@ -151,7 +302,60 @@
   }
   @keyframes blink{ 50%{opacity:.25;} }
 
-  /* ---------- 互動疊層 ---------- */
+  /* ---------- 開啟聲音提示 ---------- */
+  .sound-prompt{
+    position:absolute;
+    top:12px; right:12px;
+    z-index:15;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    padding:8px 14px;
+    border-radius:999px;
+    border:1px solid rgba(255,181,71,.5);
+    background:rgba(5,7,10,.82);
+    color:var(--warn-amber);
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.05em;
+    cursor:pointer;
+    backdrop-filter:blur(6px);
+    transition:opacity .3s ease, transform .2s ease, border-color .2s ease;
+    animation:soundPulse 1.8s ease-in-out infinite;
+  }
+  .sound-prompt:hover{ border-color:var(--warn-amber); transform:translateY(-1px); }
+  .sound-prompt.hidden{
+    opacity:0;
+    pointer-events:none;
+  }
+  .sound-icon{ font-size:13px; }
+  @keyframes soundPulse{
+    0%,100%{ box-shadow:0 0 0 0 rgba(255,181,71,.35); }
+    50%{ box-shadow:0 0 0 8px rgba(255,181,71,0); }
+  }
+
+  /* ---------- 疊加字卡：用來蓋住並取代影片原本燒錄的字卡文字 ---------- */
+  .caption-overlay{
+    position:absolute;
+    left:10px; right:10px; bottom:14px;
+    z-index:8;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:9px 16px;
+    border-radius:6px;
+    background:#1b3a6b;
+    border:1px solid rgba(255,255,255,.15);
+    box-shadow:0 6px 16px rgba(0,0,0,.35);
+    font-family:var(--sans);
+    font-size:12.5px;
+    font-weight:600;
+    color:#eaf2f6;
+    text-align:center;
+    line-height:1.5;
+  }
+
+  /* ---------- 互動決策層 ---------- */
   .decision-layer{
     position:absolute; inset:0;
     z-index:20;
@@ -159,7 +363,7 @@
     flex-direction:column;
     align-items:center;
     justify-content:flex-end;
-    padding:22px 22px 26px;
+    padding:20px 20px 24px;
     background:linear-gradient(to top, rgba(2,6,14,.92) 0%, rgba(2,6,14,.55) 45%, rgba(2,6,14,0) 78%);
     opacity:0;
     pointer-events:none;
@@ -183,37 +387,34 @@
     align-items:center;
     gap:8px;
   }
-  .decision-alert::before{
-    content:"▲";
-    font-size:10px;
-  }
+  .decision-alert::before{ content:"▲"; font-size:10px; }
 
   .decision-title{
-    font-size:clamp(16px,2.6vw,21px);
+    font-size:clamp(18px,2.9vw,24px);
     font-weight:700;
     text-align:center;
-    max-width:34ch;
+    max-width:36ch;
     line-height:1.45;
-    margin-bottom:20px;
+    margin-bottom:18px;
     color:var(--text-hi);
   }
 
   .decision-options{
     display:flex;
-    gap:14px;
+    gap:12px;
     width:100%;
-    max-width:640px;
+    max-width:760px;
     flex-wrap:wrap;
     justify-content:center;
   }
 
   .decision-btn{
-    flex:1 1 260px;
-    max-width:300px;
+    flex:1 1 220px;
+    max-width:280px;
     background:rgba(11,20,32,.9);
     border:1px solid var(--panel-line);
     border-radius:8px;
-    padding:16px 18px;
+    padding:14px 16px;
     text-align:left;
     cursor:pointer;
     color:var(--text-hi);
@@ -222,38 +423,59 @@
     backdrop-filter:blur(6px);
     position:relative;
   }
-  .decision-btn:hover{
-    transform:translateY(-2px);
-  }
-  .decision-btn:active{
-    transform:translateY(0px) scale(.99);
-  }
+  .decision-btn:hover{ transform:translateY(-2px); border-color:var(--text-mid); }
+  .decision-btn:active{ transform:translateY(0px) scale(.99); }
   .decision-btn .k{
     font-family:var(--mono);
     font-size:10px;
     letter-spacing:.12em;
     display:block;
     margin-bottom:6px;
+    color:var(--text-dim);
   }
   .decision-btn .label{
-    font-size:15px;
+    font-size:18px;
     font-weight:600;
     display:block;
     margin-bottom:4px;
   }
   .decision-btn .sub{
-    font-size:12px;
+    font-size:14px;
     color:var(--text-mid);
     line-height:1.5;
     display:block;
   }
 
-  .decision-btn.opt-a{ }
-  .decision-btn.opt-a:hover{ border-color:var(--ok-green); background:rgba(62,242,160,.06); }
-  .decision-btn.opt-a .k{ color:var(--ok-green); }
-
-  .decision-btn.opt-b:hover{ border-color:var(--crit-red); background:rgba(255,77,94,.06); }
-  .decision-btn.opt-b .k{ color:var(--crit-red); }
+  /* 複選題：被勾選的選項要有明顯的「已選取」狀態 */
+  .decision-btn.multi{
+    padding-left:42px;
+  }
+  .decision-btn.multi::before{
+    content:"";
+    position:absolute;
+    left:14px; top:16px;
+    width:16px; height:16px;
+    border-radius:4px;
+    border:1.5px solid var(--text-dim);
+    background:rgba(255,255,255,.03);
+    transition:all .15s ease;
+  }
+  .decision-btn.multi.selected{
+    border-color:var(--ok-green);
+    background:rgba(62,242,160,.08);
+  }
+  .decision-btn.multi.selected::before{
+    border-color:var(--ok-green);
+    background:var(--ok-green);
+  }
+  .decision-btn.multi.selected::after{
+    content:"✓";
+    position:absolute;
+    left:16.5px; top:14.5px;
+    font-size:12px;
+    font-weight:700;
+    color:#04170f;
+  }
 
   .decision-hint{
     margin-top:14px;
@@ -264,7 +486,12 @@
     letter-spacing:.04em;
   }
 
-  /* ---------- 結果：拔網路線（正確） ---------- */
+  .decision-submit{
+    margin-top:14px;
+    align-self:center;
+  }
+
+  /* ---------- 結果層（依 verdict 套色：good / warn / bad） ---------- */
   .result-layer{
     position:absolute; inset:0;
     z-index:30;
@@ -280,30 +507,22 @@
   }
   .result-layer.active{ opacity:1; pointer-events:auto; }
 
-  .result-layer.good{
-    background:radial-gradient(ellipse at 50% 40%, rgba(31,138,94,.28), rgba(2,6,10,.96) 70%);
-  }
-  .result-layer.bad{
-    background:#0a0000;
-  }
+  .result-layer.good{ background:radial-gradient(ellipse at 50% 40%, rgba(31,138,94,.28), rgba(2,6,10,.96) 70%); }
+  .result-layer.warn{ background:radial-gradient(ellipse at 50% 40%, rgba(255,181,71,.22), rgba(10,8,2,.96) 70%); }
+  .result-layer.bad{ background:#0a0000; }
 
   .result-icon{
-    width:56px; height:56px;
+    width:52px; height:52px;
     border-radius:50%;
     display:flex; align-items:center; justify-content:center;
-    margin-bottom:18px;
-    font-size:26px;
+    margin-bottom:16px;
+    font-size:24px;
     font-family:var(--mono);
   }
-  .good .result-icon{
-    background:rgba(62,242,160,.1);
-    border:1px solid var(--ok-green);
-    color:var(--ok-green);
-  }
+  .good .result-icon{ background:rgba(62,242,160,.1); border:1px solid var(--ok-green); color:var(--ok-green); }
+  .warn .result-icon{ background:rgba(255,181,71,.1); border:1px solid var(--warn-amber); color:var(--warn-amber); }
   .bad .result-icon{
-    background:rgba(255,77,94,.1);
-    border:1px solid var(--crit-red);
-    color:var(--crit-red);
+    background:rgba(255,77,94,.1); border:1px solid var(--crit-red); color:var(--crit-red);
     animation:pulse-red 1s infinite;
   }
   @keyframes pulse-red{
@@ -319,25 +538,67 @@
     margin-bottom:10px;
   }
   .good .result-tag{ color:var(--ok-green); }
+  .warn .result-tag{ color:var(--warn-amber); }
   .bad .result-tag{ color:var(--crit-red); }
 
   .result-title{
-    font-size:clamp(20px,3.4vw,28px);
+    font-size:clamp(23px,3.9vw,32px);
     font-weight:800;
-    margin-bottom:14px;
-    max-width:22ch;
+    margin-bottom:12px;
+    max-width:24ch;
   }
   .good .result-title{ color:var(--text-hi); }
+  .warn .result-title{ color:#fff1dc; }
   .bad .result-title{ color:#ffdde0; }
 
   .result-body{
-    font-size:14px;
+    font-size:17px;
     line-height:1.75;
     color:var(--text-mid);
-    max-width:46ch;
-    margin-bottom:26px;
+    max-width:48ch;
+    margin-bottom:22px;
   }
+  .warn .result-body{ color:#e0c399; }
   .bad .result-body{ color:#d99aa0; }
+
+  .result-retry-hint{
+    display:none;
+    font-family:var(--mono);
+    font-size:11.5px;
+    letter-spacing:.04em;
+    padding:9px 16px;
+    border-radius:6px;
+    margin-bottom:18px;
+  }
+  .warn .result-retry-hint,
+  .bad .result-retry-hint{
+    display:inline-block;
+  }
+  .warn .result-retry-hint{
+    color:var(--warn-amber);
+    background:rgba(255,181,71,.08);
+    border:1px solid rgba(255,181,71,.35);
+  }
+  .bad .result-retry-hint{
+    color:#ffb9c0;
+    background:rgba(255,77,94,.08);
+    border:1px solid rgba(255,77,94,.35);
+  }
+
+  .result-log{
+    font-family:var(--mono);
+    font-size:11px;
+    line-height:1.9;
+    text-align:left;
+    border-radius:6px;
+    padding:14px 16px;
+    max-width:440px;
+    margin:0 auto 22px;
+  }
+  .good .result-log{ color:#a8f7d4; background:rgba(62,242,160,.06); border:1px solid rgba(62,242,160,.3); }
+  .warn .result-log{ color:#ffe1ad; background:rgba(255,181,71,.06); border:1px solid rgba(255,181,71,.3); }
+  .bad .result-log{ color:#ff8a92; background:rgba(255,77,94,.06); border:1px solid rgba(255,77,94,.35); }
+  .result-log span{ color:#fff; }
 
   .result-actions{
     display:flex;
@@ -348,9 +609,9 @@
 
   .btn{
     font-family:var(--mono);
-    font-size:12px;
+    font-size:15px;
     letter-spacing:.05em;
-    padding:11px 20px;
+    padding:11px 22px;
     border-radius:6px;
     border:1px solid var(--panel-line);
     background:transparent;
@@ -366,27 +627,11 @@
     font-weight:700;
   }
   .btn.primary:hover{ filter:brightness(1.08); }
-  .btn.danger-outline{
+  .btn.retry{
     border-color:var(--crit-red);
     color:#ffb9c0;
   }
-  .btn.danger-outline:hover{ background:rgba(255,77,94,.1); }
-
-  /* bad result: fake system readout */
-  .breach-log{
-    font-family:var(--mono);
-    font-size:11.5px;
-    line-height:1.9;
-    color:#ff8a92;
-    text-align:left;
-    background:rgba(255,77,94,.06);
-    border:1px solid rgba(255,77,94,.35);
-    border-radius:6px;
-    padding:14px 16px;
-    max-width:440px;
-    margin:0 auto 26px;
-  }
-  .breach-log span{ color:#ffd7da; }
+  .btn.retry:hover{ background:rgba(255,77,94,.1); }
 
   /* ---------- 播放控制列 ---------- */
   .controls{
@@ -400,7 +645,7 @@
     font-size:11px;
     color:var(--text-dim);
   }
-  .controls .replay-btn{
+  .controls .ctrl-btn{
     font-family:var(--mono);
     font-size:11px;
     color:var(--text-mid);
@@ -411,10 +656,7 @@
     cursor:pointer;
     transition:border-color .2s ease, color .2s ease;
   }
-  .controls .replay-btn:hover{
-    border-color:var(--text-mid);
-    color:var(--text-hi);
-  }
+  .controls .ctrl-btn:hover{ border-color:var(--text-mid); color:var(--text-hi); }
   .controls .progress-track{
     flex:1;
     height:3px;
@@ -429,13 +671,59 @@
     transition:width .1s linear;
   }
 
-  /* ---------- 教學重點區 ---------- */
+  /* ---------- 全部完成畫面 ---------- */
+  .finale{
+    display:none;
+    width:100%;
+    max-width:920px;
+    text-align:center;
+    padding:60px 24px;
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    background:var(--panel);
+  }
+  .finale.active{ display:block; }
+  .finale .tag{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.16em;
+    color:var(--ok-green);
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  .finale h2{
+    font-size:clamp(27px,4.8vw,39px);
+    margin-bottom:14px;
+  }
+  .finale .score{
+    font-family:var(--mono);
+    font-size:18px;
+    color:var(--text-mid);
+    margin-bottom:28px;
+  }
+  .finale .score b{ color:var(--ok-green); font-size:18px; }
+
+  .finale-actions{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .finale-note{
+    margin-top:16px;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--text-dim);
+  }
+  .finale-note.sent{ color:var(--ok-green); }
+
+  /* ---------- 教學重點區（依當前關卡動態顯示）---------- */
   .brief{
     width:100%;
     max-width:920px;
-    margin-top:48px;
+    margin-top:44px;
     border-top:1px solid var(--panel-line);
-    padding-top:28px;
+    padding-top:26px;
   }
   .brief .eyebrow{
     font-family:var(--mono);
@@ -443,165 +731,564 @@
     letter-spacing:.16em;
     color:var(--text-dim);
     text-transform:uppercase;
-    margin-bottom:16px;
+    margin-bottom:14px;
   }
-  .brief-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
+  .brief-list{
+    display:flex;
+    flex-direction:column;
     gap:1px;
     background:var(--panel-line);
     border:1px solid var(--panel-line);
     border-radius:8px;
     overflow:hidden;
   }
-  .brief-card{
+  .brief-item{
     background:var(--panel);
-    padding:20px;
+    padding:16px 18px;
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
   }
-  .brief-card .n{
+  .brief-item .mark{
     font-family:var(--mono);
-    font-size:11px;
-    color:var(--text-dim);
-    margin-bottom:8px;
+    font-size:12px;
+    width:20px;
+    flex-shrink:0;
+    padding-top:1px;
   }
-  .brief-card.correct .n{ color:var(--ok-green); }
-  .brief-card.wrong .n{ color:var(--crit-red); }
-  .brief-card h3{
-    font-size:15px;
-    margin-bottom:8px;
-  }
-  .brief-card p{
-    font-size:13px;
-    color:var(--text-mid);
-    line-height:1.7;
-  }
+  .brief-item.correct .mark{ color:var(--ok-green); }
+  .brief-item.caution .mark{ color:var(--warn-amber); }
+  .brief-item.wrong .mark{ color:var(--crit-red); }
+  .brief-item .txt h3{ font-size:17px; margin-bottom:4px; }
+  .brief-item .txt p{ font-size:15px; color:var(--text-mid); line-height:1.6; }
 
   @media (max-width: 600px){
-    .brief-grid{ grid-template-columns:1fr; }
     .decision-options{ flex-direction:column; align-items:stretch; }
     .decision-btn{ max-width:none; }
+    .stage-progress .step-label{ display:none; }
   }
 </style>
 </head>
 <body>
+
+  <!-- ===================== 登入畫面 ===================== -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-tag">資安事件應變演練 · 測驗登入</div>
+      <h1 class="login-title">開始測驗前，<br>請先留下你的資料</h1>
+      <p class="login-desc">完成四關演練後，系統會記錄你的作答狀況。請如實填寫，測驗結束後可自行寄送完成通知。</p>
+
+      <form id="loginForm" class="login-form">
+        <label class="login-field">
+          <span>姓名</span>
+          <input type="text" id="inputName" required placeholder="請輸入姓名" autocomplete="name">
+        </label>
+        <label class="login-field">
+          <span>公司 / 單位</span>
+          <input type="text" id="inputCompany" required placeholder="請輸入公司或單位名稱" autocomplete="organization">
+        </label>
+        <label class="login-field">
+          <span>Email</span>
+          <input type="email" id="inputEmail" required placeholder="請輸入 Email" autocomplete="email">
+        </label>
+        <button type="submit" class="btn primary login-submit">開始測驗</button>
+      </form>
+      <div class="login-error" id="loginError" style="display:none;">請完整填寫姓名、公司與有效的 Email</div>
+    </div>
+  </div>
 
   <header class="masthead">
     <span class="tag">資安事件應變演練</span>
     <span class="clock" id="clock">STANDBY</span>
   </header>
 
-  <section class="hero">
-    <h1>螢幕突然變藍。<br>你的<span class="accent">下一步</span>，決定結局。</h1>
-    <p>影片播放到病患監視器異常畫面時會自動暫停，並請你在兩個應變方式中做出選擇。這是醫療資安事件應變的常見情境演練 —— 選錯的代價，遠比你想的更高。</p>
+  <div class="stage-progress">
+    <span class="step-label" id="stepLabel">第 1 關 / 共 1 關</span>
+    <div class="stage-dots" id="stageDots"></div>
+  </div>
+
+  <section class="hero" id="heroSection">
+    <h1 id="heroTitle">螢幕突然變藍。<br>你的<span class="accent">下一步</span>，決定結局。</h1>
+    <p id="heroDesc">影片播放到異常畫面時會自動暫停，並請你在選項中做出選擇。每一關結束後會顯示應變結果與說明，接著自動進入下一關。</p>
   </section>
 
-  <div class="stage-wrap">
+  <div class="stage-wrap" id="stageWrap">
     <div class="stage" id="stage">
-      <video id="video" src="video.mp4" playsinline preload="auto" muted></video>
+      <video id="video" playsinline preload="auto" muted></video>
 
       <div class="hud-top" id="hudTop">
-        <span class="rec"><span class="dot"></span> LIVE · ICU-MONITOR-04</span>
-        <span id="hudTime">00:00 / 00:10</span>
+        <span class="rec"><span class="dot"></span> <span id="hudLabel">LIVE · SCENARIO-01</span></span>
+        <span id="hudTime">00:00 / 00:00</span>
       </div>
 
-      <!-- 互動決策層 -->
+      <button class="sound-prompt" id="soundPrompt" type="button">
+        <span class="sound-icon">🔇</span>
+        <span class="sound-text">點擊開啟聲音</span>
+      </button>
+
+      <div class="caption-overlay" id="captionOverlay" style="display:none;"></div>
+
       <div class="decision-layer" id="decisionLayer">
         <div class="decision-alert">偵測到異常 · 系統回應已中止</div>
-        <div class="decision-title">監視器畫面出現異常錯誤訊息，你會怎麼做？</div>
-        <div class="decision-options">
-          <button class="decision-btn opt-a" id="btnUnplug">
-            <span class="k">選項 A</span>
-            <span class="label">拔除網路線</span>
-            <span class="sub">立即物理性阻斷連線，防止入侵擴散，並保留機器現狀以利後續鑑識。</span>
-          </button>
-          <button class="decision-btn opt-b" id="btnShutdown">
-            <span class="k">選項 B</span>
-            <span class="label">馬上關機</span>
-            <span class="sub">直接切斷電源，讓畫面消失、問題「看起來」解決了。</span>
-          </button>
-        </div>
-        <div class="decision-hint">影片已暫停，請點選其中一個選項以繼續</div>
+        <div class="decision-title" id="decisionTitle">畫面出現異常，你會怎麼做？</div>
+        <div class="decision-options" id="decisionOptions"></div>
+        <div class="decision-hint" id="decisionHint">影片已暫停，請點選其中一個選項以繼續</div>
+        <button class="btn primary decision-submit" id="btnSubmit" style="display:none;">送出作答</button>
       </div>
 
-      <!-- 結果層：拔網路線（正確，繼續播放後顯示） -->
-      <div class="result-layer good" id="resultGood">
-        <div class="result-icon">✓</div>
-        <div class="result-tag">應變正確</div>
-        <div class="result-title">網路已阻斷，威脅未能擴散</div>
-        <div class="result-body">
-          拔除網路線是資安事件的第一時間標準動作：切斷攻擊者的遠端連線，同時保留記憶體與系統現狀，讓後續鑑識與復原有跡可循。你成功阻止了這起入侵事件蔓延到院內其他設備。
-        </div>
+      <div class="result-layer" id="resultLayer">
+        <div class="result-icon" id="resultIcon">✓</div>
+        <div class="result-tag" id="resultTag">應變正確</div>
+        <div class="result-title" id="resultTitle"></div>
+        <div class="result-log" id="resultLog" style="display:none;"></div>
+        <div class="result-body" id="resultBody"></div>
+        <div class="result-retry-hint" id="resultRetryHint">應變未通過，請重新演練這一關才能繼續</div>
         <div class="result-actions">
-          <button class="btn primary" id="replayGood">重新觀看演練</button>
-        </div>
-      </div>
-
-      <!-- 結果層：馬上關機（錯誤） -->
-      <div class="result-layer bad" id="resultBad">
-        <div class="result-icon">✕</div>
-        <div class="result-tag">駭客入侵成功</div>
-        <div class="result-title">系統已失守</div>
-        <div class="breach-log">
-          &gt; SYSTEM SHUTDOWN INITIATED<br>
-          &gt; VOLATILE MEMORY <span>WIPED</span><br>
-          &gt; FORENSIC TRACE <span>LOST</span><br>
-          &gt; BACKDOOR PERSISTENCE <span>CONFIRMED</span><br>
-          &gt; INTRUSION STATUS: <span>SUCCESSFUL</span>
-        </div>
-        <div class="result-body">
-          強制關機清空了記憶體中的攻擊證據，攻擊者留下的後門在重開機後依然存在。畫面看起來「恢復正常」，但威脅其實從未被真正阻斷——這正是駭客最樂見的結果。
-        </div>
-        <div class="result-actions">
-          <button class="btn danger-outline" id="replayBad">重新演練一次</button>
+          <button class="btn retry" id="btnRetry">重新演練這一關</button>
+          <button class="btn primary" id="btnNext">下一關</button>
         </div>
       </div>
     </div>
 
     <div class="controls">
-      <button class="replay-btn" id="restartBtn">⟲ 從頭播放</button>
+      <button class="ctrl-btn" id="restartBtn">⟲ 從頭播放本關</button>
       <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
       <span id="stateLabel">播放中</span>
     </div>
   </div>
 
-  <section class="brief">
-    <div class="eyebrow">演練重點 · 事件發生的第一分鐘</div>
-    <div class="brief-grid">
-      <div class="brief-card correct">
-        <div class="n">→ 建議做法</div>
-        <h3>拔除網路線，別關機</h3>
-        <p>物理斷網能立即阻止資料外洩與橫向移動，同時完整保留系統記憶體、執行程序與日誌，讓資安團隊得以還原攻擊路徑並清除真正的威脅來源。</p>
-      </div>
-      <div class="brief-card wrong">
-        <div class="n">→ 常見誤區</div>
-        <h3>直接關機，看似乾淨俐落</h3>
-        <p>強制關機會清空揮發性記憶體中的關鍵跡證，讓已植入的後門或惡意程式在重開機後繼續潛伏，錯失處理事件的黃金時間。</p>
-      </div>
+  <div class="finale" id="finale">
+    <div class="tag">演練完成</div>
+    <h2>全部 <span id="finaleTotal">1</span> 個情境已完成</h2>
+    <div class="score">正確應變 <b id="finaleCorrect">0</b> / <span id="finaleTotal2">1</span></div>
+    <div class="finale-actions">
+      <button class="btn primary" id="btnSendEmail">寄送完成通知信</button>
+      <button class="btn retry" id="btnRestartAll">從第 1 關重新演練</button>
     </div>
+    <div class="finale-note" id="finaleNote">點擊「寄送完成通知信」，用你的 Gmail 寄出完成通知</div>
+  </div>
+
+  <section class="brief" id="briefSection">
+    <div class="eyebrow" id="briefEyebrow">演練重點 · 作答後於此揭曉</div>
+    <div class="brief-list" id="briefList"></div>
   </section>
 
 <script>
+/* =========================================================
+   題庫設定區
+   要新增一關，只要在 SCENARIOS 陣列裡多加一個物件即可，
+   下方所有播放/判分/UI邏輯都會自動套用，不用改動。
+
+   兩種寫法都支援：
+
+   【簡單寫法】一關只有一個決策點（例如第1、2關）：
+     video, hudLabel, heroTitle, heroDesc,
+     decisionTime: 影片播放到第幾秒時暫停並跳出選項,
+     decisionTitle: 決策當下要問的問題,
+     options: [...]
+   程式會自動把它包成只有一個 checkpoint 的關卡，效果跟下面完全一樣。
+
+   【多決策點寫法】一支影片裡要切出好幾個依序的暫停點（例如第3關）：
+     video, hudLabel, heroTitle, heroDesc,
+     checkpoints: [
+       {
+         segStart: 這個檢查點的影片起始秒數（答錯只重播這一段用）,
+         time: 影片播放到第幾秒時暫停並跳出選項,
+         title: 決策當下要問的問題,
+         options: [...],
+         briefPoints: 這個檢查點答對／答錯後，頁面下方要顯示的重點卡片
+       },
+       { segStart: ..., time: ..., title: ..., options: [...], briefPoints: [...] },
+       ...
+     ]
+   運作規則：
+     - 每個 checkpoint 依序播放、暫停、作答，答對才會接著播下一段。
+     - 任一 checkpoint 答錯，只會重播「那個 checkpoint 自己的段落」
+       （從它的 segStart 播到它的 time），不影響前面已經答對的段落，
+       也不用整支影片從頭來過。
+     - 「從頭播放本關」按鈕才會回到整支影片最開頭（第一個 checkpoint 的 segStart）。
+     - 全部 checkpoint 都答對、影片自然播完，才算整關過關，才會出現「下一關」。
+
+   options 陣列，每個選項是：
+     { key:"A", label:"選項文字", sub:"選項的一行補充說明",
+       verdict:"good" | "bad",
+       // good → 答對，繼續播放到下一個 checkpoint（或播完進入下一關）
+       // bad  → 答錯，顯示結果畫面，只能重播這個 checkpoint 的段落，不能跳過
+       resultTag / resultTitle / resultBody: 選這個選項後顯示的結果文案
+       resultLog: (選填) 模擬終端機log的陣列文字，不填就不顯示
+     }
+   ========================================================= */
+
+const SCENARIOS = [
+  {
+    video: "video-01.mp4",
+    hudLabel: "LIVE · ICU-MONITOR-04",
+    heroTitle: '螢幕突然變藍。<br>你的<span class="accent">下一步</span>，決定結局。',
+    heroDesc: "影片播放到病患監視器異常畫面時會自動暫停，並請你在兩個應變方式中做出選擇。這是醫療資安事件應變的常見情境演練 —— 選錯的代價，遠比你想的更高。",
+    decisionTime: 6.0,
+    decisionTitle: "監視器畫面出現異常錯誤訊息，你會怎麼做？",
+    options: [
+      {
+        key: "A",
+        label: "拔除網路線",
+        sub: "立即物理性阻斷連線，防止入侵擴散，並保留機器現狀以利後續鑑識。",
+        verdict: "good",
+        continuePlay: true,
+        resultTag: "應變正確",
+        resultTitle: "網路已阻斷，威脅未能擴散",
+        resultBody: "拔除網路線是資安事件的第一時間標準動作：切斷攻擊者的遠端連線，同時保留記憶體與系統現狀，讓後續鑑識與復原有跡可循。你成功阻止了這起入侵事件蔓延到院內其他設備。"
+      },
+      {
+        key: "B",
+        label: "馬上關機",
+        sub: "直接切斷電源，讓畫面消失、問題「看起來」解決了。",
+        verdict: "bad",
+        continuePlay: false,
+        resultTag: "駭客入侵成功",
+        resultTitle: "系統已失守",
+        resultLog: [
+          "SYSTEM SHUTDOWN INITIATED",
+          "VOLATILE MEMORY <span>WIPED</span>",
+          "FORENSIC TRACE <span>LOST</span>",
+          "BACKDOOR PERSISTENCE <span>CONFIRMED</span>",
+          "INTRUSION STATUS: <span>SUCCESSFUL</span>"
+        ],
+        resultBody: "強制關機清空了記憶體中的攻擊證據，攻擊者留下的後門在重開機後依然存在。畫面看起來「恢復正常」，但威脅其實從未被真正阻斷——這正是駭客最樂見的結果。"
+      }
+    ],
+    briefPoints: [
+      { mark:"→", tone:"correct", title:"建議做法：拔除網路線，別關機", body:"物理斷網能立即阻止資料外洩與橫向移動，同時完整保留系統記憶體、執行程序與日誌，讓資安團隊得以還原攻擊路徑並清除真正的威脅來源。" },
+      { mark:"→", tone:"wrong", title:"常見誤區：直接關機，看似乾淨俐落", body:"強制關機會清空揮發性記憶體中的關鍵跡證，讓已植入的後門或惡意程式在重開機後繼續潛伏，錯失處理事件的黃金時間。" }
+    ]
+  },
+
+  {
+    video: "video-02.mp4",
+    hudLabel: "LIVE · ICU-MONITOR-04",
+    heroTitle: '網路線已經拔了。<br>接下來<span class="accent">這一步</span>，才是真正的考驗。',
+    heroDesc: "斷網只是第一步。設備斷線後看似恢復平靜，但威脅是否已經排除、要不要讓系統繼續運作，接下來的決定同樣關鍵。",
+    decisionTime: 3.5,
+    decisionTitle: "網路線已拔除，監視器畫面暫時中止，你接下來會怎麼做？",
+    options: [
+      {
+        key: "A",
+        label: "沒事發生，重啟系統",
+        sub: "既然斷線了，直接重啟讓設備恢復運作即可。",
+        verdict: "bad",
+        continuePlay: false,
+        resultTag: "風險未解除",
+        resultTitle: "遭入侵狀況未查明，仍有駭客入侵風險",
+        resultLog: [
+          "NETWORK STATUS: DISCONNECTED",
+          "BREACH SCOPE: <span>NOT VERIFIED</span>",
+          "SYSTEM RESTARTED WITHOUT INSPECTION",
+          "COMPROMISE STATUS: <span>UNKNOWN</span>",
+          "RISK LEVEL: <span>UNRESOLVED</span>"
+        ],
+        resultBody: "拔線只是阻斷了對外連線，並不代表威脅已經排除。在還沒查明入侵範圍、沒有資安或IT人員確認之前就直接重啟系統，可能讓潛藏的惡意程式在下一次連線時繼續活動，也錯過了保留現場、通報處理的黃金時間。"
+      },
+      {
+        key: "B",
+        label: "暫停操作，立刻通知護理站",
+        sub: "先讓設備維持斷線現狀，即時通報現場人員與資安窗口。",
+        verdict: "good",
+        continuePlay: true,
+        resultTag: "應變正確",
+        resultTitle: "已即時通報，風險有效控管",
+        resultBody: "暫停操作並立即通知護理站與資安窗口，讓現場人員能同步掌握狀況、調度備援設備，並讓專業人員接手排查與鑑識。這是斷網之後最關鍵的下一步：把個人的應變動作，轉成團隊層級的處理程序。"
+      }
+    ],
+    briefPoints: [
+      { mark:"→", tone:"correct", title:"建議做法：斷線後立刻通報，別急著重啟", body:"拔線只是暫時阻斷攻擊路徑，實際入侵範圍與是否已被植入後門仍需專業排查。第一時間通報護理站與資安窗口，能讓後續處理更完整、也能同步啟動備援機制。" },
+      { mark:"→", tone:"wrong", title:"常見誤區：斷線後就當作沒事，直接重啟", body:"斷線不等於清除威脅。未經查明就重啟系統，等於讓可能殘留的惡意程式有機會再次連線或發作，也讓資安團隊失去完整還原事件的機會。" }
+    ]
+  },
+
+  {
+    video: "video-03.mp4",
+    hudLabel: "LIVE · 醫工課辦公室",
+    heroTitle: '規定寫得清清楚楚。<br>但<span class="accent">通報時效</span>，你會照做嗎？',
+    heroDesc: "資安事件不是只有拔線、斷網就結束，通報時效、通報內容、後續處理，每一步都是規定的一部分。這一關有三個接連的決策點，任何一題答錯都必須重新作答該段落才能繼續。",
+    // 疊加字卡：蓋掉影片原本在約8.5秒燒錄的「立即通知原廠」字卡，
+    // 換成新文字。from 是開始顯示的秒數，直接對應影片本身字卡出現的時間點。
+    captions: [
+      { from: 8.5, text: "立刻請你通知原廠，我來負責通知資訊室" }
+    ],
+    checkpoints: [
+      {
+        segStart: 0,
+        time: 2.6,
+        title: "院內規定「通報時間：30分鐘內」，這起事件你會怎麼處理？",
+        options: [
+          {
+            key: "A",
+            label: "工作完成再通報",
+            sub: "先把手邊維修工作收尾，之後再補通報。",
+            verdict: "bad",
+            resultTag: "違反通報時效",
+            resultTitle: "資安出現漏洞，醫院有被入侵可能性",
+            resultLog: [
+              "NOTIFICATION WINDOW: 30 MIN",
+              "ACTUAL RESPONSE: <span>DELAYED</span>",
+              "EXPOSURE TIME: <span>EXTENDED</span>",
+              "BREACH CONTAINMENT: <span>NOT CONFIRMED</span>",
+              "RISK LEVEL: <span>ELEVATED</span>"
+            ],
+            resultBody: "把通報排在手邊工作之後，等於讓潛在威脅多了一段沒人監控的空窗期。資安事件的處理時效是院內規定的一部分，不是可以視個人工作進度延後的選項——通報晚了，攻擊者能利用的時間就多了。"
+          },
+          {
+            key: "B",
+            label: "30分鐘內通報",
+            sub: "依院內規定，在時效內完成通報，優先處理資安事件。",
+            verdict: "good",
+            resultTag: "應變正確",
+            resultTitle: "通報時效內完成，風險有效控管",
+            resultBody: "在規定的30分鐘內完成通報，讓資安與維護團隊能在第一時間掌握狀況、同步展開排查。時效是院內資安規範的硬性要求，準時通報才能讓後續應變機制真正發揮作用。"
+          },
+          {
+            key: "C",
+            label: "我的工作重要，完成其他工作再通報",
+            sub: "手邊還有其他任務，覺得優先順序應該自己判斷。",
+            verdict: "bad",
+            resultTag: "違反通報時效",
+            resultTitle: "資安出現漏洞，醫院有被入侵可能性",
+            resultLog: [
+              "NOTIFICATION WINDOW: 30 MIN",
+              "ACTUAL RESPONSE: <span>DELAYED</span>",
+              "SELF-PRIORITIZED TASK OVER PROTOCOL",
+              "BREACH CONTAINMENT: <span>NOT CONFIRMED</span>",
+              "RISK LEVEL: <span>ELEVATED</span>"
+            ],
+            resultBody: "資安事件的通報時效不是可以自行評估優先順序後延後的項目。個人任務再重要，也不能取代院內規定的處理程序——延遲通報等於讓醫院暴露在未知風險中，責任不會因為「手邊還有事」而減輕。"
+          }
+        ],
+        briefPoints: [
+          { mark:"→", tone:"correct", title:"建議做法：30分鐘內完成通報，別自行延後", body:"通報時效是院內資安規範明訂的硬性要求，目的是縮短威脅未受控的空窗期。不論手邊工作是否完成，資安事件都應優先在時效內通報。" },
+          { mark:"→", tone:"wrong", title:"常見誤區：先忙完手邊工作再通報", body:"把通報視為可延後的次要事項，會拉長威脅未被處理的時間，增加資料外洩與入侵擴大的風險，也違反院內規定的應變程序。" }
+        ]
+      },
+      {
+        segStart: 2.6,
+        time: 4.6,
+        title: "向護理站與相關單位通報時，內容該怎麼交代？",
+        options: [
+          {
+            key: "A",
+            label: "通報處理狀況以及流程",
+            sub: "清楚說明事件經過、目前處理進度與後續流程。",
+            verdict: "good",
+            resultTag: "應變正確",
+            resultTitle: "通報內容完整，後續處理有依據",
+            resultBody: "把處理狀況與流程說清楚，能讓接手的護理站與資安團隊立刻掌握事件全貌，不需要事後反覆追問細節，也讓後續應變更有效率。"
+          },
+          {
+            key: "B",
+            label: "隨便說說就好，有通報就好",
+            sub: "反正有講過就算通報了，細節之後再說。",
+            verdict: "bad",
+            resultTag: "通報內容不完整",
+            resultTitle: "資安出現漏洞，醫院有被入侵可能性",
+            resultLog: [
+              "NOTIFICATION CONTENT: <span>INSUFFICIENT</span>",
+              "INCIDENT SCOPE: <span>UNCLEAR</span>",
+              "HANDOFF QUALITY: <span>DEGRADED</span>",
+              "RISK LEVEL: <span>ELEVATED</span>"
+            ],
+            resultBody: "通報不是「講過就好」，內容不完整等於讓下一手接手的人在資訊不足的狀況下做判斷，可能延誤處理、也可能讓風險範圍被低估。通報必須包含事件狀況與處理流程，才算是有效通報。"
+          }
+        ],
+        briefPoints: [
+          { mark:"→", tone:"correct", title:"建議做法：通報要包含狀況與流程，不能只是形式上講一聲", body:"完整的通報內容讓接手單位能立即掌握事件全貌與處理進度，是後續應變效率的關鍵。" },
+          { mark:"→", tone:"wrong", title:"常見誤區：隨口帶過，覺得有講就是有通報", body:"通報內容含糊會讓資訊在交接過程中流失，接手單位可能因為資訊不足而誤判風險或延誤處理。" }
+        ]
+      },
+      {
+        segStart: 4.6,
+        time: 8.3,
+        title: "確認事件後，下一步該怎麼處理？（複選，請選出所有你會採取的行動）",
+        multiSelect: true,
+        options: [
+          {
+            key: "A",
+            label: "通報原廠並進行後續全面檢查",
+            sub: "聯繫設備原廠，同時安排完整的系統檢查。",
+            verdict: "good"
+          },
+          {
+            key: "B",
+            label: "反正沒造成損失就算了",
+            sub: "既然目前看起來沒有實際損失，就不用再深究。",
+            verdict: "bad"
+          },
+          {
+            key: "C",
+            label: "偕同醫工課通知資訊室",
+            sub: "同步讓資訊室掌握狀況，共同處理後續應變。",
+            verdict: "good"
+          }
+        ],
+        // 複選題答錯（少選、多選、或選到錯誤選項）統一顯示這則結果文案
+        wrongResult: {
+          verdict: "bad",
+          resultTag: "檢查未落實",
+          resultTitle: "資安出現漏洞，醫院有被入侵可能性",
+          resultLog: [
+            "VENDOR NOTIFICATION: <span>INCOMPLETE</span>",
+            "IT DEPT NOTIFICATION: <span>INCOMPLETE</span>",
+            "FULL INSPECTION: <span>NOT CONFIRMED</span>",
+            "RISK LEVEL: <span>ELEVATED</span>"
+          ],
+          resultBody: "「目前沒有損失」不代表沒有被入侵，許多攻擊在初期不會立即造成明顯影響。通報原廠、同步讓資訊室掌握狀況，兩件事缺一不可——只做其中一件，或跳過通報只想著沒事就好，都等於放任潛藏的風險繼續存在。"
+        },
+        briefPoints: [
+          { mark:"→", tone:"correct", title:"建議做法：通報原廠＋通知資訊室，兩者缺一不可", body:"入侵是否造成損失與是否曾經發生是兩件事。通報原廠確認設備狀況、同步讓資訊室掌握事件全貌，兩項行動並行才能真正確認風險是否已排除。" },
+          { mark:"→", tone:"wrong", title:"常見誤區：沒看到損失就當作沒事，或只做了其中一步", body:"許多攻擊初期不會有明顯徵兆，略過原廠通報或資訊室通知任何一項，都等於讓潛藏風險繼續留在系統裡，沒有真正被排查。" }
+        ]
+      }
+    ]
+  },
+
+  {
+    video: "video-04.mp4",
+    hudLabel: "LIVE · 病房維修區",
+    heroTitle: '桌上這份文件，<br>不是隨便誰都能<span class="accent">看、拍、傳</span>的。',
+    heroDesc: "維修設備時看到病人資料，是醫工人員很容易遇到的情境。這一關是複選題，選出所有你認為正確的做法，全部勾對才算過關。",
+    checkpoints: [
+      {
+        segStart: 0,
+        time: 4.7,
+        title: "工程師在桌上看到病人的診斷証明書，關於病人隱私，下列哪些做法是正確的？（複選，請選出所有正確答案）",
+        multiSelect: true,
+        options: [
+          {
+            key: "A",
+            label: "大明星耶，看一下沒關係",
+            sub: "",
+            verdict: "bad"
+          },
+          {
+            key: "B",
+            label: "病人隱私不能看",
+            sub: "",
+            verdict: "good"
+          },
+          {
+            key: "C",
+            label: "拍照一下跟朋友八卦",
+            sub: "",
+            verdict: "bad"
+          },
+          {
+            key: "D",
+            label: "病人隱私不能聽",
+            sub: "",
+            verdict: "good"
+          },
+          {
+            key: "E",
+            label: "病人隱私不拍照",
+            sub: "",
+            verdict: "good"
+          },
+          {
+            key: "F",
+            label: "病人隱私不外傳",
+            sub: "",
+            verdict: "good"
+          }
+        ],
+        // 複選題答錯（少選、多選、或選到錯誤選項）統一顯示這則結果文案
+        wrongResult: {
+          verdict: "bad",
+          resultTag: "違反個人隱私",
+          resultTitle: "已違反病人隱私規範",
+          resultLog: [
+            "PATIENT PRIVACY POLICY: <span>VIOLATED</span>",
+            "UNAUTHORIZED ACCESS/DISCLOSURE: <span>DETECTED</span>",
+            "HOSPITAL LIABILITY: <span>EXPOSED</span>",
+            "ACCOUNTABILITY: <span>PENDING RECOVERY</span>"
+          ],
+          resultBody: "已違反病人隱私規範，造成醫院損失，醫院有權就此向相關人員追償。病人隱私「不看、不聽、不拍、不外傳」四項缺一不可，多選或少選任何一項，都代表隱私保護沒有落實。"
+        },
+        briefPoints: [
+          { mark:"→", tone:"correct", title:"建議做法：病人隱私四不——不看、不聽、不拍、不外傳", body:"接觸病人資料時，只要不屬於自己職責範圍內必要的查看，一律不看、不聽、不拍照、不外傳，這四項是病人隱私保護的基本原則，缺一不可。" },
+          { mark:"→", tone:"wrong", title:"常見誤區：好奇心作祟，或覺得「講一下沒關係」", body:"不論病人身分是否特殊、資訊是否「看起來無傷大雅」，未經授權的查看、拍照或轉述都是隱私外洩，一旦發生，醫院要承擔的是法律與信譽上的實際損失。" }
+        ]
+      }
+    ]
+  }
+];
+
+/* =========================================================
+   以下為播放/判分/UI 邏輯，一般不需要修改
+   ========================================================= */
 (function(){
   const video = document.getElementById('video');
   const stage = document.getElementById('stage');
+  const stageWrap = document.getElementById('stageWrap');
   const decisionLayer = document.getElementById('decisionLayer');
-  const resultGood = document.getElementById('resultGood');
-  const resultBad = document.getElementById('resultBad');
-  const btnUnplug = document.getElementById('btnUnplug');
-  const btnShutdown = document.getElementById('btnShutdown');
-  const replayGood = document.getElementById('replayGood');
-  const replayBad = document.getElementById('replayBad');
+  const decisionTitle = document.getElementById('decisionTitle');
+  const decisionOptions = document.getElementById('decisionOptions');
+  const decisionHint = document.getElementById('decisionHint');
+  const btnSubmit = document.getElementById('btnSubmit');
+  const resultLayer = document.getElementById('resultLayer');
+  const resultIcon = document.getElementById('resultIcon');
+  const resultTag = document.getElementById('resultTag');
+  const resultTitle = document.getElementById('resultTitle');
+  const resultBody = document.getElementById('resultBody');
+  const resultLog = document.getElementById('resultLog');
+  const btnRetry = document.getElementById('btnRetry');
+  const btnNext = document.getElementById('btnNext');
   const restartBtn = document.getElementById('restartBtn');
   const progressFill = document.getElementById('progressFill');
   const stateLabel = document.getElementById('stateLabel');
   const hudTime = document.getElementById('hudTime');
   const hudTop = document.getElementById('hudTop');
+  const hudLabel = document.getElementById('hudLabel');
   const clock = document.getElementById('clock');
+  const stepLabel = document.getElementById('stepLabel');
+  const stageDots = document.getElementById('stageDots');
+  const heroTitle = document.getElementById('heroTitle');
+  const heroDesc = document.getElementById('heroDesc');
+  const briefList = document.getElementById('briefList');
+  const finale = document.getElementById('finale');
+  const finaleTotal = document.getElementById('finaleTotal');
+  const finaleTotal2 = document.getElementById('finaleTotal2');
+  const finaleCorrect = document.getElementById('finaleCorrect');
+  const btnRestartAll = document.getElementById('btnRestartAll');
+  const soundPrompt = document.getElementById('soundPrompt');
+  const captionOverlay = document.getElementById('captionOverlay');
 
-  // 藍屏異常畫面出現的時間點（秒）
-  const DECISION_TIME = 6.0;
-  let decisionShown = false;
-  let decisionResolved = false;
+  let soundUnlocked = false; // 使用者是否已手動解鎖聲音（瀏覽器政策限制自動播放帶聲音的媒體）
+
+  // 相容處理：把舊格式（單一 decisionTime/decisionTitle/options）
+  // 自動轉成新格式（checkpoints 陣列），這樣第1、2關資料完全不用改，
+  // 播放引擎統一只認 checkpoints。
+  SCENARIOS.forEach(s => {
+    if(!s.checkpoints){
+      s.checkpoints = [{
+        segStart: 0,
+        time: s.decisionTime,
+        title: s.decisionTitle,
+        options: s.options.map(o => ({ ...o }))   // continuePlay 欄位在新引擎中不再需要，但保留無妨
+      }];
+    }
+  });
+
+  const TOTAL = SCENARIOS.length;
+  let current = 0;              // 目前第幾關（對應 SCENARIOS 索引）
+  let cpIndex = 0;               // 目前這一關第幾個 checkpoint（對應 checkpoints 索引）
+  let decisionShown = false;     // 這個 checkpoint 的決策層是否已經跳出過
+  let selectedKeys = new Set();  // 複選題目前已勾選的選項 key
+  const results = new Array(TOTAL).fill(null); // 每一關「整體」是否過關：'good' | 'bad' | null
+
+  // 重考次數記錄：retryCounts[關卡索引][checkpoint索引] = 該題答錯重測了幾次
+  // 用來作為情報面板的參考指標（次數越少代表越熟悉規範）
+  const retryCounts = SCENARIOS.map(s => new Array(s.checkpoints.length).fill(0));
+
+  // 測試者身份資訊，登入後才會填入
+  let learnerInfo = { name: '', company: '', email: '' };
+  const startTime = new Date();
 
   function fmt(t){
     const m = Math.floor(t/60).toString().padStart(2,'0');
@@ -610,11 +1297,83 @@
   }
 
   function updateClock(){
-    const now = new Date();
-    clock.textContent = now.toTimeString().slice(0,8);
+    clock.textContent = new Date().toTimeString().slice(0,8);
   }
   updateClock();
   setInterval(updateClock, 1000);
+
+  function buildDots(){
+    stageDots.innerHTML = '';
+    for(let i=0;i<TOTAL;i++){
+      const d = document.createElement('div');
+      d.className = 'stage-dot';
+      stageDots.appendChild(d);
+    }
+  }
+
+  function refreshDots(){
+    const dots = stageDots.children;
+    for(let i=0;i<TOTAL;i++){
+      dots[i].className = 'stage-dot';
+      if(results[i] === 'good'){
+        dots[i].classList.add('done');   // 只有整關全部答對才算過關
+      } else if(results[i] === 'bad'){
+        dots[i].classList.add('fail');
+      } else if(i === current){
+        dots[i].classList.add('current');
+      }
+    }
+    stepLabel.textContent = `第 ${current+1} 關 / 共 ${TOTAL} 關`;
+  }
+
+  function renderBrief(points){
+    briefList.innerHTML = '';
+    (points || []).forEach(p => {
+      const item = document.createElement('div');
+      item.className = 'brief-item ' + (p.tone || 'correct');
+      item.innerHTML = `<span class="mark">${p.mark || '→'}</span><div class="txt"><h3>${p.title}</h3><p>${p.body}</p></div>`;
+      briefList.appendChild(item);
+    });
+  }
+
+  // 載入整個「關」：重置到該關第一個 checkpoint，從影片開頭播放
+  function loadScenario(idx){
+    const s = SCENARIOS[idx];
+    hudLabel.textContent = s.hudLabel || ('SCENARIO-' + (idx+1));
+    heroTitle.innerHTML = s.heroTitle || '';
+    heroDesc.textContent = s.heroDesc || '';
+    briefList.innerHTML = '';   // 尚未作答，先不顯示演練重點，避免洩題
+    refreshDots();
+
+    video.src = s.video;
+    video.muted = !soundUnlocked;   // 使用者解鎖聲音前維持靜音自動播放，解鎖後才有聲音
+
+    cpIndex = 0;
+    playSegmentFrom(0);
+  }
+
+  // 從指定秒數開始播放，播到目前 checkpoint 的暫停時間點為止
+  function playSegmentFrom(startTime){
+    decisionShown = false;
+    resultLayer.classList.remove('active');
+    decisionLayer.classList.remove('active');
+    hudTop.style.opacity = '1';
+    btnNext.style.display = '';
+    btnRetry.classList.remove('primary');
+    btnRetry.classList.add('retry');
+    captionOverlay.style.display = 'none';   // 重播區段時先隱藏字卡，timeupdate 會依時間重新判斷是否顯示
+
+    video.currentTime = startTime;
+    stateLabel.textContent = '播放中';
+
+    video.play().catch(() => {
+      stateLabel.textContent = '點擊畫面開始播放';
+      stageWrap.addEventListener('click', function once(){
+        video.play();
+        stageWrap.removeEventListener('click', once);
+      });
+    });
+  }
 
   video.addEventListener('loadedmetadata', () => {
     hudTime.textContent = '00:00 / ' + fmt(video.duration);
@@ -625,28 +1384,83 @@
       progressFill.style.width = (video.currentTime/video.duration*100) + '%';
       hudTime.textContent = fmt(video.currentTime) + ' / ' + fmt(video.duration);
     }
-    if(!decisionShown && !decisionResolved && video.currentTime >= DECISION_TIME){
+    const s = SCENARIOS[current];
+    const cp = s.checkpoints[cpIndex];
+    if(!decisionShown && cp && video.currentTime >= cp.time){
       showDecision();
     }
-  });
 
-  video.addEventListener('play', () => {
-    stateLabel.textContent = '播放中';
+    // 疊加字卡：時間到了就蓋上去取代影片原本的字卡文字；
+    // 若目前播放位置在字卡起始時間之前（例如重播某段），就收回字卡。
+    if(s.captions && s.captions.length){
+      const activeCaption = s.captions
+        .filter(c => video.currentTime >= c.from)
+        .sort((a, b) => b.from - a.from)[0];
+      if(activeCaption){
+        captionOverlay.textContent = activeCaption.text;
+        captionOverlay.style.display = 'flex';
+      } else {
+        captionOverlay.style.display = 'none';
+      }
+    }
   });
 
   video.addEventListener('ended', () => {
-    stateLabel.textContent = '演練完成';
-    if(decisionResolved === 'unplug'){
-      showResult('good');
-    }
+    // 影片自然播畢，代表這一關所有 checkpoint 都已通過（最後一段沒有暫停點）
+    stateLabel.textContent = '本關播放完畢';
+    results[current] = 'good';
+    refreshDots();
+    showScenarioComplete();
   });
 
   function showDecision(){
     decisionShown = true;
-    video.pause();
+    video.pause();   // 暫停播放，音樂與畫面同步停止，決策當下完全靜音
     stateLabel.textContent = '等待你的決定';
     hudTop.style.opacity = '0';
+
+    const s = SCENARIOS[current];
+    const cp = s.checkpoints[cpIndex];
+    const isMulti = !!cp.multiSelect;
+
+    decisionTitle.textContent = cp.title || '';
+    decisionOptions.innerHTML = '';
+    selectedKeys = new Set();
+
+    cp.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = isMulti ? 'decision-btn multi' : 'decision-btn';
+      btn.innerHTML = `<span class="k">選項 ${opt.key}</span><span class="label">${opt.label}</span><span class="sub">${opt.sub || ''}</span>`;
+      if(isMulti){
+        btn.addEventListener('click', () => toggleMultiOption(opt, btn));
+      } else {
+        btn.addEventListener('click', () => chooseOption(opt));
+      }
+      decisionOptions.appendChild(btn);
+    });
+
+    if(isMulti){
+      decisionHint.textContent = '影片已暫停，請勾選所有你認為正確的選項，選完後按下方「送出作答」';
+      btnSubmit.style.display = '';
+      btnSubmit.disabled = true;
+      btnSubmit.onclick = () => submitMultiAnswer(cp);
+    } else {
+      decisionHint.textContent = '影片已暫停，請點選其中一個選項以繼續';
+      btnSubmit.style.display = 'none';
+    }
+
     decisionLayer.classList.add('active');
+  }
+
+  function toggleMultiOption(opt, btnEl){
+    if(selectedKeys.has(opt.key)){
+      selectedKeys.delete(opt.key);
+      btnEl.classList.remove('selected');
+    } else {
+      selectedKeys.add(opt.key);
+      btnEl.classList.add('selected');
+    }
+    btnSubmit.disabled = (selectedKeys.size === 0);
   }
 
   function hideDecision(){
@@ -654,61 +1468,299 @@
     hudTop.style.opacity = '1';
   }
 
-  btnUnplug.addEventListener('click', () => {
-    decisionResolved = 'unplug';
+  function chooseOption(opt){
     hideDecision();
-    stateLabel.textContent = '已阻斷連線 · 繼續播放';
-    video.play();
-  });
 
-  btnShutdown.addEventListener('click', () => {
-    decisionResolved = 'shutdown';
-    hideDecision();
-    // 給一點停頓感，模擬螢幕黑掉後才跳出入侵成功訊息
-    stateLabel.textContent = '系統關機中…';
-    stage.classList.add('shutting-down');
-    setTimeout(() => {
-      showResult('bad');
-    }, 550);
-  });
-
-  function showResult(kind){
-    if(kind === 'good'){
-      resultGood.classList.add('active');
-      stateLabel.textContent = '演練完成 · 應變正確';
+    if(opt.verdict === 'good'){
+      // 答對這個 checkpoint：往下一個 checkpoint 繼續播放，不中斷、不顯示結果畫面
+      stateLabel.textContent = '繼續播放…';
+      cpIndex += 1;
+      const s = SCENARIOS[current];
+      if(cpIndex < s.checkpoints.length){
+        decisionShown = false;
+        video.play();   // 直接從目前位置繼續播，下一個 checkpoint 的 timeupdate 會自動接手
+      } else {
+        video.play();   // 已經是最後一個 checkpoint，繼續播完剩餘片段直到 ended
+      }
     } else {
-      resultBad.classList.add('active');
-      stateLabel.textContent = '演練結束 · 系統已失守';
+      // 答錯：整關判定失敗，顯示結果畫面，只能重播「這個 checkpoint 自己的段落」
+      retryCounts[current][cpIndex] += 1;   // 記錄這一題重考次數，供情報面板參考
+      results[current] = 'bad';
+      refreshDots();
+      stateLabel.textContent = '應變未通過';
+      setTimeout(() => showResult(opt), 450);
     }
   }
 
-  function resetAll(){
-    decisionShown = false;
-    decisionResolved = false;
+  // 複選題送出作答：比對「已勾選的選項集合」是否恰好等於「正確答案集合」
+  // 完全一致（不多選、不少選）才算通過；否則一律視為答錯，套用 cp.wrongResult 的文案
+  function submitMultiAnswer(cp){
     hideDecision();
-    resultGood.classList.remove('active');
-    resultBad.classList.remove('active');
-    stage.classList.remove('shutting-down');
-    video.pause();
-    video.currentTime = 0;
-    progressFill.style.width = '0%';
-    stateLabel.textContent = '播放中';
-    video.play().catch(()=>{});
+
+    const correctKeys = cp.options.filter(o => o.verdict === 'good').map(o => o.key).sort();
+    const chosenKeys = Array.from(selectedKeys).sort();
+    const isExactMatch = (correctKeys.length === chosenKeys.length) &&
+                          correctKeys.every((k, i) => k === chosenKeys[i]);
+
+    if(isExactMatch){
+      stateLabel.textContent = '繼續播放…';
+      cpIndex += 1;
+      const s = SCENARIOS[current];
+      if(cpIndex < s.checkpoints.length){
+        decisionShown = false;
+      }
+      video.play();
+    } else {
+      retryCounts[current][cpIndex] += 1;   // 記錄這一題重考次數，供情報面板參考
+      results[current] = 'bad';
+      refreshDots();
+      stateLabel.textContent = '應變未通過';
+      setTimeout(() => showResult(cp.wrongResult), 450);
+    }
   }
 
-  replayGood.addEventListener('click', resetAll);
-  replayBad.addEventListener('click', resetAll);
-  restartBtn.addEventListener('click', resetAll);
+  function showResult(opt){
+    const s = SCENARIOS[current];
+    const cp = s.checkpoints[cpIndex];
 
-  // 自動開始播放（多數瀏覽器要求靜音才能自動播放）
-  video.muted = true;
-  video.play().catch(() => {
-    stateLabel.textContent = '點擊畫面開始播放';
-    stage.addEventListener('click', function once(){
-      video.play();
-      stage.removeEventListener('click', once);
-    });
+    resultLayer.classList.remove('good','bad');
+    resultLayer.classList.add(opt.verdict, 'active');
+
+    resultIcon.textContent = (opt.verdict === 'good') ? '✓' : '✕';
+    resultTag.textContent = opt.resultTag || '';
+    resultTitle.textContent = opt.resultTitle || '';
+    resultBody.textContent = opt.resultBody || '';
+
+    // 答錯結果畫面不顯示模擬終端機log卡片，只保留中文標題與說明文字
+    resultLog.style.display = 'none';
+
+    // 答錯：只顯示「重新演練這一段」，不給下一關／繼續的機會
+    btnNext.style.display = 'none';
+    btnRetry.classList.add('primary');
+    btnRetry.classList.remove('retry');
+    btnRetry.textContent = '重新回答這一題';
+
+    renderBrief(cp.briefPoints);   // 作答後才揭曉這個 checkpoint 的重點
+
+    stateLabel.textContent = '應變未通過，請重新演練';
+  }
+
+  // 這一關全部 checkpoint 都答對、影片自然播畢時顯示的「過關」訊息
+  function showScenarioComplete(){
+    const s = SCENARIOS[current];
+    // 用最後一個 checkpoint 的正確選項文案（若有）當作本關總結展示
+    const lastCp = s.checkpoints[s.checkpoints.length - 1];
+    const goodOpt = lastCp.options.find(o => o.verdict === 'good');
+
+    resultLayer.classList.remove('good','bad');
+    resultLayer.classList.add('good', 'active');
+    resultIcon.textContent = '✓';
+    resultTag.textContent = '本關完成';
+    resultTitle.textContent = (goodOpt && goodOpt.resultTitle) || '應變正確，本關完成';
+    resultBody.textContent = (goodOpt && goodOpt.resultBody) || '所有決策點都應變正確，做得很好。';
+    resultLog.style.display = 'none';
+
+    btnNext.style.display = '';
+    btnRetry.classList.remove('primary');
+    btnRetry.classList.add('retry');
+    btnRetry.textContent = '重新演練這一關';
+    btnNext.textContent = (current === TOTAL - 1) ? '完成演練' : '下一關';
+
+    // 彙整這一關「所有」checkpoint 的演練重點，讓學員一次看到完整回顧
+    const allPoints = s.checkpoints.reduce((acc, cp) => acc.concat(cp.briefPoints || []), []);
+    renderBrief(allPoints);
+  }
+
+  btnRetry.addEventListener('click', () => {
+    // 只重播「目前這個 checkpoint 自己的段落」：從它的 segStart 播到它的 time
+    const s = SCENARIOS[current];
+    const cp = s.checkpoints[cpIndex];
+    btnRetry.textContent = '重新演練這一關';   // 還原預設文字，供下次結果畫面使用
+    playSegmentFrom(cp.segStart);
   });
+
+  btnNext.addEventListener('click', () => {
+    if(current < TOTAL - 1){
+      current += 1;
+      loadScenario(current);
+      stageWrap.scrollIntoView({ behavior:'smooth', block:'start' });
+    } else {
+      showFinale();
+    }
+  });
+
+  restartBtn.addEventListener('click', () => {
+    // 「從頭播放本關」：回到整關最開頭（第一個 checkpoint 的 segStart，通常是0）
+    cpIndex = 0;
+    const s = SCENARIOS[current];
+    playSegmentFrom(s.checkpoints[0].segStart);
+  });
+
+  function showFinale(){
+    stageWrap.style.display = 'none';
+    document.getElementById('briefSection').style.display = 'none';
+    document.querySelector('.controls').style.display = 'none';
+    document.getElementById('heroSection').style.display = 'none';
+    finale.classList.add('active');
+    const correctCount = results.filter(r => r === 'good').length;
+    finaleTotal.textContent = TOTAL;
+    finaleTotal2.textContent = TOTAL;
+    finaleCorrect.textContent = correctCount;
+
+    submitToGoogleForm();   // 完成當下就自動把重考次數等資料送進情報面板，不需要使用者額外動作
+  }
+
+  // 把姓名/公司/Email/各關重考次數/完成時間送進 Google 表單，
+  // 表單會自動彙整進對應的 Google 試算表，管理者隨時打開試算表就能看到所有人的結果。
+  //
+  // 用「隱藏 iframe + 表單 target」的方式送出，而不是用 fetch，
+  // 是因為 Google 表單的送出端點不允許跨網域直接讀取回應（no-cors 限制），
+  // 用原生表單送出可以繞過這個限制，即使看不到回應也能確保資料送達。
+  const GOOGLE_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSeK73BodPo8X2t__GvvOtcuEs4Po-UmntztWHO0i_YSJw-YGw/formResponse';
+  const GOOGLE_FORM_ENTRIES = {
+    name: 'entry.693859051',
+    company: 'entry.2064044710',
+    email: 'entry.1147737763',
+    scenario1Retry: 'entry.685164554',
+    scenario2Retry: 'entry.1725002064',
+    scenario3Q1Retry: 'entry.454428424',
+    scenario3Q2Retry: 'entry.1979674176',
+    scenario3Q3Retry: 'entry.1405083025',
+    scenario4Retry: 'entry.1756191457',
+    finishTime: 'entry.1415443966'
+  };
+
+  let formSubmitted = false;   // 避免重複送出（例如使用者按了兩次「從頭重新演練」又完成一次）
+
+  function submitToGoogleForm(){
+    if(formSubmitted) return;
+    formSubmitted = true;
+
+    const finishTimeStr = new Date().toLocaleString('zh-TW', { hour12:false });
+
+    const values = {
+      [GOOGLE_FORM_ENTRIES.name]: learnerInfo.name,
+      [GOOGLE_FORM_ENTRIES.company]: learnerInfo.company,
+      [GOOGLE_FORM_ENTRIES.email]: learnerInfo.email,
+      [GOOGLE_FORM_ENTRIES.scenario1Retry]: String(retryCounts[0][0]),
+      [GOOGLE_FORM_ENTRIES.scenario2Retry]: String(retryCounts[1][0]),
+      [GOOGLE_FORM_ENTRIES.scenario3Q1Retry]: String(retryCounts[2][0]),
+      [GOOGLE_FORM_ENTRIES.scenario3Q2Retry]: String(retryCounts[2][1]),
+      [GOOGLE_FORM_ENTRIES.scenario3Q3Retry]: String(retryCounts[2][2]),
+      [GOOGLE_FORM_ENTRIES.scenario4Retry]: String(retryCounts[3][0]),
+      [GOOGLE_FORM_ENTRIES.finishTime]: finishTimeStr
+    };
+
+    // 建立一個隱藏 iframe 當作表單送出目標，避免頁面因送出表單而跳轉離開
+    let iframe = document.getElementById('formTargetFrame');
+    if(!iframe){
+      iframe = document.createElement('iframe');
+      iframe.name = 'formTargetFrame';
+      iframe.id = 'formTargetFrame';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
+
+    const form = document.createElement('form');
+    form.action = GOOGLE_FORM_ACTION;
+    form.method = 'POST';
+    form.target = 'formTargetFrame';
+    form.style.display = 'none';
+
+    Object.entries(values).forEach(([entryName, val]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = entryName;
+      input.value = val;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+  }
+
+  // 「寄送完成通知信」：開啟使用者自己的 Gmail 撰寫畫面，預先帶入主旨與內容，
+  // 使用者只需要按送出，不需要額外輸入任何文字。
+  const NOTIFY_EMAIL_TO = 'ch3804@chgh.org.tw';   // 固定寄給管理者信箱，測試者不需要自己填收件人
+  const btnSendEmail = document.getElementById('btnSendEmail');
+  const finaleNote = document.getElementById('finaleNote');
+
+  btnSendEmail.addEventListener('click', () => {
+    const correctCount = results.filter(r => r === 'good').length;
+    const subject = `[資安演練完成通知] ${learnerInfo.name}（${learnerInfo.company}）`;
+    const body =
+`姓名：${learnerInfo.name}
+公司：${learnerInfo.company}
+Email：${learnerInfo.email}
+完成關卡：${correctCount} / ${TOTAL}
+完成時間：${new Date().toLocaleString('zh-TW', { hour12:false })}
+
+以上為資安事件應變演練完成通知，由系統自動產生郵件草稿。`;
+
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(NOTIFY_EMAIL_TO)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(gmailUrl, '_blank');
+
+    finaleNote.textContent = '已為你開啟 Gmail 草稿，請確認內容後按送出';
+    finaleNote.classList.add('sent');
+  });
+
+  btnRestartAll.addEventListener('click', () => {
+    finale.classList.remove('active');
+    stageWrap.style.display = '';
+    document.getElementById('briefSection').style.display = '';
+    document.querySelector('.controls').style.display = '';
+    document.getElementById('heroSection').style.display = '';
+    results.fill(null);
+    retryCounts.forEach(arr => arr.fill(0));
+    formSubmitted = false;
+    finaleNote.textContent = '點擊「寄送完成通知信」，用你的 Gmail 寄出完成通知';
+    finaleNote.classList.remove('sent');
+    current = 0;
+    loadScenario(0);
+  });
+
+  // 聲音解鎖：瀏覽器政策不允許帶聲音的媒體自動播放，
+  // 使用者第一次點擊後才能正式聽到背景音樂，之後全程維持有聲。
+  function unlockSound(){
+    if(soundUnlocked) return;
+    soundUnlocked = true;
+    video.muted = false;
+    soundPrompt.classList.add('hidden');
+    video.play().catch(() => {});
+  }
+  soundPrompt.addEventListener('click', unlockSound);
+
+  // ---------- 登入表單 ----------
+  const loginScreen = document.getElementById('loginScreen');
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
+  const inputName = document.getElementById('inputName');
+  const inputCompany = document.getElementById('inputCompany');
+  const inputEmail = document.getElementById('inputEmail');
+
+  loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = inputName.value.trim();
+    const company = inputCompany.value.trim();
+    const email = inputEmail.value.trim();
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    if(!name || !company || !emailValid){
+      loginError.style.display = 'block';
+      return;
+    }
+
+    loginError.style.display = 'none';
+    learnerInfo = { name, company, email };
+    loginScreen.classList.add('hidden');
+
+    // 登入完成才真正開始播放第一關，避免測試者身份資料還沒填就開始計入重考次數
+    loadScenario(0);
+  });
+
+  // 初始化：先建立進度點，但影片要等登入完成後才開始播放
+  buildDots();
 })();
 </script>
 
