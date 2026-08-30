@@ -360,21 +360,17 @@
   .decision-layer{
     position:absolute; inset:0;
     z-index:20;
-    display:flex;
+    display:none;
     flex-direction:column;
     align-items:center;
     justify-content:flex-end;
     padding:20px 20px 24px;
-    background:linear-gradient(to top, rgba(2,6,14,.92) 0%, rgba(2,6,14,.55) 45%, rgba(2,6,14,0) 78%);
-    opacity:0;
+    background:rgba(2,6,14,.88);
     pointer-events:none;
-    transform:translateY(6px);
-    transition:opacity .45s ease, transform .45s ease;
   }
   .decision-layer.active{
-    opacity:1;
+    display:flex;
     pointer-events:auto;
-    transform:translateY(0);
   }
 
   .decision-alert{
@@ -401,17 +397,16 @@
   }
 
   .decision-options{
-    display:flex;
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
     gap:12px;
     width:100%;
     max-width:760px;
-    flex-wrap:wrap;
-    justify-content:center;
   }
 
   .decision-btn{
-    flex:1 1 220px;
-    max-width:280px;
+    width:100%;
+    box-sizing:border-box;
     background:rgba(11,20,32,.9);
     border:1px solid var(--panel-line);
     border-radius:8px;
@@ -495,19 +490,17 @@
   .result-layer{
     position:absolute; inset:0;
     z-index:30;
-    display:flex;
+    display:none;
     flex-direction:column;
     align-items:center;
     justify-content:center;
     text-align:center;
     padding:24px;
-    opacity:0;
     pointer-events:none;
-    transition:opacity .4s ease;
   }
-  .result-layer.active{ opacity:1; pointer-events:auto; }
+  .result-layer.active{ display:flex; pointer-events:auto; }
 
-  .result-layer.good{ background:radial-gradient(ellipse at 50% 40%, rgba(31,138,94,.28), rgba(2,6,10,.96) 70%); }
+  .result-layer.good{ background:rgba(6,20,14,.96); }
   .result-layer.warn{ background:radial-gradient(ellipse at 50% 40%, rgba(255,181,71,.22), rgba(10,8,2,.96) 70%); }
   .result-layer.bad{ background:#0a0000; }
 
@@ -763,8 +756,6 @@
   .brief-item .txt p{ font-size:15px; color:var(--text-mid); line-height:1.6; }
 
   @media (max-width: 600px){
-    .decision-options{ flex-direction:column; align-items:stretch; }
-    .decision-btn{ max-width:none; width:100%; flex-basis:auto; box-sizing:border-box; }
     .stage-progress .step-label{ display:none; }
   }
 </style>
