@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>資安事件應變演練｜遭遇入侵時，你的第一個決定</title>
+<style>
+  :root{
+    --void:#05070a;
+    --panel:#0b1420;
+    --panel-line:#1c2a3a;
+    --ok-green:#3ef2a0;
+    --ok-green-dim:#1f8a5e;
+    --warn-amber:#ffb547;
+    --crit-red:#ff4d5e;
+    --crit-red-dim:#7a1620;
+    --bsod-blue:#1b3a8c;
+    --text-hi:#eaf2f6;
+    --text-mid:#94a8b8;
+    --text-dim:#4f6072;
+    --mono: 'IBM Plex Mono','SF Mono','Consolas',monospace;
+    --sans: 'IBM Plex Sans','Segoe UI',sans-serif;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html,body{
+    background:var(--void);
+    color:var(--text-hi);
+    font-family:var(--sans);
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  body{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:32px 16px 80px;
+  }
+
+  /* ---------- 頂部標頭 ---------- */
+  .masthead{
+    width:100%;
+    max-width:920px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px solid var(--panel-line);
+    padding-bottom:16px;
+    margin-bottom:28px;
+    font-family:var(--mono);
+  }
+  .masthead .tag{
+    font-size:11px;
+    letter-spacing:.18em;
+    color:var(--ok-green);
+    text-transform:uppercase;
+  }
+  .masthead .tag::before{
+    content:"● ";
+  }
+  .masthead .clock{
+    font-size:11px;
+    color:var(--text-dim);
+    letter-spacing:.1em;
+  }
+
+  .hero{
+    width:100%;
+    max-width:920px;
+    margin-bottom:28px;
+  }
+  .hero h1{
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:clamp(24px,4vw,38px);
+    line-height:1.25;
+    letter-spacing:-.01em;
+    max-width:18ch;
+  }
+  .hero h1 .accent{ color:var(--warn-amber); }
+  .hero p{
+    margin-top:12px;
+    color:var(--text-mid);
+    font-size:15px;
+    line-height:1.7;
+    max-width:56ch;
+  }
+
+  /* ---------- 播放器外框 ---------- */
+  .stage-wrap{
+    width:100%;
+    max-width:920px;
+    position:relative;
+  }
+
+  .stage{
+    position:relative;
+    width:100%;
+    aspect-ratio:16/9;
+    background:#000;
+    border-radius:6px;
+    overflow:hidden;
+    border:1px solid var(--panel-line);
+    box-shadow:0 0 0 1px rgba(0,0,0,.4), 0 30px 60px -20px rgba(0,0,0,.7);
+  }
+
+  .stage video{
+    width:100%;
+    height:100%;
+    display:block;
+    object-fit:cover;
+    background:#000;
+  }
+
+  /* scanline / crt vignette overlay, always on, subtle */
+  .stage::after{
+    content:"";
+    position:absolute; inset:0;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,.35) 100%);
+    z-index:5;
+  }
+
+  /* ---------- 頂部狀態列（疊在影片上） ---------- */
+  .hud-top{
+    position:absolute;
+    top:0; left:0; right:0;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 14px;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.08em;
+    color:rgba(234,242,246,.85);
+    background:linear-gradient(to bottom, rgba(0,0,0,.55), transparent);
+    z-index:6;
+    pointer-events:none;
+    transition:opacity .4s ease;
+  }
+  .hud-top .rec{
+    display:flex; align-items:center; gap:6px;
+  }
+  .hud-top .rec .dot{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--crit-red);
+    animation:blink 1.2s infinite;
+  }
+  @keyframes blink{ 50%{opacity:.25;} }
+
+  /* ---------- 互動疊層 ---------- */
+  .decision-layer{
+    position:absolute; inset:0;
+    z-index:20;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-end;
+    padding:22px 22px 26px;
+    background:linear-gradient(to top, rgba(2,6,14,.92) 0%, rgba(2,6,14,.55) 45%, rgba(2,6,14,0) 78%);
+    opacity:0;
+    pointer-events:none;
+    transform:translateY(6px);
+    transition:opacity .45s ease, transform .45s ease;
+  }
+  .decision-layer.active{
+    opacity:1;
+    pointer-events:auto;
+    transform:translateY(0);
+  }
+
+  .decision-alert{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    color:var(--crit-red);
+    text-transform:uppercase;
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .decision-alert::before{
+    content:"▲";
+    font-size:10px;
+  }
+
+  .decision-title{
+    font-size:clamp(16px,2.6vw,21px);
+    font-weight:700;
+    text-align:center;
+    max-width:34ch;
+    line-height:1.45;
+    margin-bottom:20px;
+    color:var(--text-hi);
+  }
+
+  .decision-options{
+    display:flex;
+    gap:14px;
+    width:100%;
+    max-width:640px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+
+  .decision-btn{
+    flex:1 1 260px;
+    max-width:300px;
+    background:rgba(11,20,32,.9);
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:16px 18px;
+    text-align:left;
+    cursor:pointer;
+    color:var(--text-hi);
+    font-family:var(--sans);
+    transition:border-color .2s ease, transform .15s ease, background .2s ease;
+    backdrop-filter:blur(6px);
+    position:relative;
+  }
+  .decision-btn:hover{
+    transform:translateY(-2px);
+  }
+  .decision-btn:active{
+    transform:translateY(0px) scale(.99);
+  }
+  .decision-btn .k{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.12em;
+    display:block;
+    margin-bottom:6px;
+  }
+  .decision-btn .label{
+    font-size:15px;
+    font-weight:600;
+    display:block;
+    margin-bottom:4px;
+  }
+  .decision-btn .sub{
+    font-size:12px;
+    color:var(--text-mid);
+    line-height:1.5;
+    display:block;
+  }
+
+  .decision-btn.opt-a{ }
+  .decision-btn.opt-a:hover{ border-color:var(--ok-green); background:rgba(62,242,160,.06); }
+  .decision-btn.opt-a .k{ color:var(--ok-green); }
+
+  .decision-btn.opt-b:hover{ border-color:var(--crit-red); background:rgba(255,77,94,.06); }
+  .decision-btn.opt-b .k{ color:var(--crit-red); }
+
+  .decision-hint{
+    margin-top:14px;
+    font-family:var(--mono);
+    font-size:10.5px;
+    color:var(--text-dim);
+    text-align:center;
+    letter-spacing:.04em;
+  }
+
+  /* ---------- 結果：拔網路線（正確） ---------- */
+  .result-layer{
+    position:absolute; inset:0;
+    z-index:30;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:24px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .4s ease;
+  }
+  .result-layer.active{ opacity:1; pointer-events:auto; }
+
+  .result-layer.good{
+    background:radial-gradient(ellipse at 50% 40%, rgba(31,138,94,.28), rgba(2,6,10,.96) 70%);
+  }
+  .result-layer.bad{
+    background:#0a0000;
+  }
+
+  .result-icon{
+    width:56px; height:56px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:18px;
+    font-size:26px;
+    font-family:var(--mono);
+  }
+  .good .result-icon{
+    background:rgba(62,242,160,.1);
+    border:1px solid var(--ok-green);
+    color:var(--ok-green);
+  }
+  .bad .result-icon{
+    background:rgba(255,77,94,.1);
+    border:1px solid var(--crit-red);
+    color:var(--crit-red);
+    animation:pulse-red 1s infinite;
+  }
+  @keyframes pulse-red{
+    0%,100%{ box-shadow:0 0 0 0 rgba(255,77,94,.5); }
+    50%{ box-shadow:0 0 0 14px rgba(255,77,94,0); }
+  }
+
+  .result-tag{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  .good .result-tag{ color:var(--ok-green); }
+  .bad .result-tag{ color:var(--crit-red); }
+
+  .result-title{
+    font-size:clamp(20px,3.4vw,28px);
+    font-weight:800;
+    margin-bottom:14px;
+    max-width:22ch;
+  }
+  .good .result-title{ color:var(--text-hi); }
+  .bad .result-title{ color:#ffdde0; }
+
+  .result-body{
+    font-size:14px;
+    line-height:1.75;
+    color:var(--text-mid);
+    max-width:46ch;
+    margin-bottom:26px;
+  }
+  .bad .result-body{ color:#d99aa0; }
+
+  .result-actions{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+
+  .btn{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.05em;
+    padding:11px 20px;
+    border-radius:6px;
+    border:1px solid var(--panel-line);
+    background:transparent;
+    color:var(--text-hi);
+    cursor:pointer;
+    transition:all .2s ease;
+  }
+  .btn:hover{ border-color:var(--text-hi); }
+  .btn.primary{
+    background:var(--ok-green);
+    color:#04170f;
+    border-color:var(--ok-green);
+    font-weight:700;
+  }
+  .btn.primary:hover{ filter:brightness(1.08); }
+  .btn.danger-outline{
+    border-color:var(--crit-red);
+    color:#ffb9c0;
+  }
+  .btn.danger-outline:hover{ background:rgba(255,77,94,.1); }
+
+  /* bad result: fake system readout */
+  .breach-log{
+    font-family:var(--mono);
+    font-size:11.5px;
+    line-height:1.9;
+    color:#ff8a92;
+    text-align:left;
+    background:rgba(255,77,94,.06);
+    border:1px solid rgba(255,77,94,.35);
+    border-radius:6px;
+    padding:14px 16px;
+    max-width:440px;
+    margin:0 auto 26px;
+  }
+  .breach-log span{ color:#ffd7da; }
+
+  /* ---------- 播放控制列 ---------- */
+  .controls{
+    width:100%;
+    max-width:920px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-top:14px;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--text-dim);
+  }
+  .controls .replay-btn{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--text-mid);
+    background:transparent;
+    border:1px solid var(--panel-line);
+    border-radius:5px;
+    padding:6px 12px;
+    cursor:pointer;
+    transition:border-color .2s ease, color .2s ease;
+  }
+  .controls .replay-btn:hover{
+    border-color:var(--text-mid);
+    color:var(--text-hi);
+  }
+  .controls .progress-track{
+    flex:1;
+    height:3px;
+    background:var(--panel-line);
+    border-radius:3px;
+    overflow:hidden;
+  }
+  .controls .progress-fill{
+    height:100%;
+    width:0%;
+    background:var(--ok-green);
+    transition:width .1s linear;
+  }
+
+  /* ---------- 教學重點區 ---------- */
+  .brief{
+    width:100%;
+    max-width:920px;
+    margin-top:48px;
+    border-top:1px solid var(--panel-line);
+    padding-top:28px;
+  }
+  .brief .eyebrow{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.16em;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    margin-bottom:16px;
+  }
+  .brief-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1px;
+    background:var(--panel-line);
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .brief-card{
+    background:var(--panel);
+    padding:20px;
+  }
+  .brief-card .n{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--text-dim);
+    margin-bottom:8px;
+  }
+  .brief-card.correct .n{ color:var(--ok-green); }
+  .brief-card.wrong .n{ color:var(--crit-red); }
+  .brief-card h3{
+    font-size:15px;
+    margin-bottom:8px;
+  }
+  .brief-card p{
+    font-size:13px;
+    color:var(--text-mid);
+    line-height:1.7;
+  }
+
+  @media (max-width: 600px){
+    .brief-grid{ grid-template-columns:1fr; }
+    .decision-options{ flex-direction:column; align-items:stretch; }
+    .decision-btn{ max-width:none; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="masthead">
+    <span class="tag">資安事件應變演練</span>
+    <span class="clock" id="clock">STANDBY</span>
+  </header>
+
+  <section class="hero">
+    <h1>螢幕突然變藍。<br>你的<span class="accent">下一步</span>，決定結局。</h1>
+    <p>影片播放到病患監視器異常畫面時會自動暫停，並請你在兩個應變方式中做出選擇。這是醫療資安事件應變的常見情境演練 —— 選錯的代價，遠比你想的更高。</p>
+  </section>
+
+  <div class="stage-wrap">
+    <div class="stage" id="stage">
+      <video id="video" src="video.mp4" playsinline preload="auto" muted></video>
+
+      <div class="hud-top" id="hudTop">
+        <span class="rec"><span class="dot"></span> LIVE · ICU-MONITOR-04</span>
+        <span id="hudTime">00:00 / 00:10</span>
+      </div>
+
+      <!-- 互動決策層 -->
+      <div class="decision-layer" id="decisionLayer">
+        <div class="decision-alert">偵測到異常 · 系統回應已中止</div>
+        <div class="decision-title">監視器畫面出現異常錯誤訊息，你會怎麼做？</div>
+        <div class="decision-options">
+          <button class="decision-btn opt-a" id="btnUnplug">
+            <span class="k">選項 A</span>
+            <span class="label">拔除網路線</span>
+            <span class="sub">立即物理性阻斷連線，防止入侵擴散，並保留機器現狀以利後續鑑識。</span>
+          </button>
+          <button class="decision-btn opt-b" id="btnShutdown">
+            <span class="k">選項 B</span>
+            <span class="label">馬上關機</span>
+            <span class="sub">直接切斷電源，讓畫面消失、問題「看起來」解決了。</span>
+          </button>
+        </div>
+        <div class="decision-hint">影片已暫停，請點選其中一個選項以繼續</div>
+      </div>
+
+      <!-- 結果層：拔網路線（正確，繼續播放後顯示） -->
+      <div class="result-layer good" id="resultGood">
+        <div class="result-icon">✓</div>
+        <div class="result-tag">應變正確</div>
+        <div class="result-title">網路已阻斷，威脅未能擴散</div>
+        <div class="result-body">
+          拔除網路線是資安事件的第一時間標準動作：切斷攻擊者的遠端連線，同時保留記憶體與系統現狀，讓後續鑑識與復原有跡可循。你成功阻止了這起入侵事件蔓延到院內其他設備。
+        </div>
+        <div class="result-actions">
+          <button class="btn primary" id="replayGood">重新觀看演練</button>
+        </div>
+      </div>
+
+      <!-- 結果層：馬上關機（錯誤） -->
+      <div class="result-layer bad" id="resultBad">
+        <div class="result-icon">✕</div>
+        <div class="result-tag">駭客入侵成功</div>
+        <div class="result-title">系統已失守</div>
+        <div class="breach-log">
+          &gt; SYSTEM SHUTDOWN INITIATED<br>
+          &gt; VOLATILE MEMORY <span>WIPED</span><br>
+          &gt; FORENSIC TRACE <span>LOST</span><br>
+          &gt; BACKDOOR PERSISTENCE <span>CONFIRMED</span><br>
+          &gt; INTRUSION STATUS: <span>SUCCESSFUL</span>
+        </div>
+        <div class="result-body">
+          強制關機清空了記憶體中的攻擊證據，攻擊者留下的後門在重開機後依然存在。畫面看起來「恢復正常」，但威脅其實從未被真正阻斷——這正是駭客最樂見的結果。
+        </div>
+        <div class="result-actions">
+          <button class="btn danger-outline" id="replayBad">重新演練一次</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="replay-btn" id="restartBtn">⟲ 從頭播放</button>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span id="stateLabel">播放中</span>
+    </div>
+  </div>
+
+  <section class="brief">
+    <div class="eyebrow">演練重點 · 事件發生的第一分鐘</div>
+    <div class="brief-grid">
+      <div class="brief-card correct">
+        <div class="n">→ 建議做法</div>
+        <h3>拔除網路線，別關機</h3>
+        <p>物理斷網能立即阻止資料外洩與橫向移動，同時完整保留系統記憶體、執行程序與日誌，讓資安團隊得以還原攻擊路徑並清除真正的威脅來源。</p>
+      </div>
+      <div class="brief-card wrong">
+        <div class="n">→ 常見誤區</div>
+        <h3>直接關機，看似乾淨俐落</h3>
+        <p>強制關機會清空揮發性記憶體中的關鍵跡證，讓已植入的後門或惡意程式在重開機後繼續潛伏，錯失處理事件的黃金時間。</p>
+      </div>
+    </div>
+  </section>
+
+<script>
+(function(){
+  const video = document.getElementById('video');
+  const stage = document.getElementById('stage');
+  const decisionLayer = document.getElementById('decisionLayer');
+  const resultGood = document.getElementById('resultGood');
+  const resultBad = document.getElementById('resultBad');
+  const btnUnplug = document.getElementById('btnUnplug');
+  const btnShutdown = document.getElementById('btnShutdown');
+  const replayGood = document.getElementById('replayGood');
+  const replayBad = document.getElementById('replayBad');
+  const restartBtn = document.getElementById('restartBtn');
+  const progressFill = document.getElementById('progressFill');
+  const stateLabel = document.getElementById('stateLabel');
+  const hudTime = document.getElementById('hudTime');
+  const hudTop = document.getElementById('hudTop');
+  const clock = document.getElementById('clock');
+
+  // 藍屏異常畫面出現的時間點（秒）
+  const DECISION_TIME = 6.0;
+  let decisionShown = false;
+  let decisionResolved = false;
+
+  function fmt(t){
+    const m = Math.floor(t/60).toString().padStart(2,'0');
+    const s = Math.floor(t%60).toString().padStart(2,'0');
+    return m+':'+s;
+  }
+
+  function updateClock(){
+    const now = new Date();
+    clock.textContent = now.toTimeString().slice(0,8);
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  video.addEventListener('loadedmetadata', () => {
+    hudTime.textContent = '00:00 / ' + fmt(video.duration);
+  });
+
+  video.addEventListener('timeupdate', () => {
+    if(video.duration){
+      progressFill.style.width = (video.currentTime/video.duration*100) + '%';
+      hudTime.textContent = fmt(video.currentTime) + ' / ' + fmt(video.duration);
+    }
+    if(!decisionShown && !decisionResolved && video.currentTime >= DECISION_TIME){
+      showDecision();
+    }
+  });
+
+  video.addEventListener('play', () => {
+    stateLabel.textContent = '播放中';
+  });
+
+  video.addEventListener('ended', () => {
+    stateLabel.textContent = '演練完成';
+    if(decisionResolved === 'unplug'){
+      showResult('good');
+    }
+  });
+
+  function showDecision(){
+    decisionShown = true;
+    video.pause();
+    stateLabel.textContent = '等待你的決定';
+    hudTop.style.opacity = '0';
+    decisionLayer.classList.add('active');
+  }
+
+  function hideDecision(){
+    decisionLayer.classList.remove('active');
+    hudTop.style.opacity = '1';
+  }
+
+  btnUnplug.addEventListener('click', () => {
+    decisionResolved = 'unplug';
+    hideDecision();
+    stateLabel.textContent = '已阻斷連線 · 繼續播放';
+    video.play();
+  });
+
+  btnShutdown.addEventListener('click', () => {
+    decisionResolved = 'shutdown';
+    hideDecision();
+    // 給一點停頓感，模擬螢幕黑掉後才跳出入侵成功訊息
+    stateLabel.textContent = '系統關機中…';
+    stage.classList.add('shutting-down');
+    setTimeout(() => {
+      showResult('bad');
+    }, 550);
+  });
+
+  function showResult(kind){
+    if(kind === 'good'){
+      resultGood.classList.add('active');
+      stateLabel.textContent = '演練完成 · 應變正確';
+    } else {
+      resultBad.classList.add('active');
+      stateLabel.textContent = '演練結束 · 系統已失守';
+    }
+  }
+
+  function resetAll(){
+    decisionShown = false;
+    decisionResolved = false;
+    hideDecision();
+    resultGood.classList.remove('active');
+    resultBad.classList.remove('active');
+    stage.classList.remove('shutting-down');
+    video.pause();
+    video.currentTime = 0;
+    progressFill.style.width = '0%';
+    stateLabel.textContent = '播放中';
+    video.play().catch(()=>{});
+  }
+
+  replayGood.addEventListener('click', resetAll);
+  replayBad.addEventListener('click', resetAll);
+  restartBtn.addEventListener('click', resetAll);
+
+  // 自動開始播放（多數瀏覽器要求靜音才能自動播放）
+  video.muted = true;
+  video.play().catch(() => {
+    stateLabel.textContent = '點擊畫面開始播放';
+    stage.addEventListener('click', function once(){
+      video.play();
+      stage.removeEventListener('click', once);
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
