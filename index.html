@@ -358,19 +358,20 @@
 
   /* ---------- 互動決策層 ---------- */
   .decision-layer{
-    position:absolute; inset:0;
-    z-index:20;
     display:none;
     flex-direction:column;
     align-items:center;
-    justify-content:flex-end;
+    width:100%;
+    max-width:920px;
+    margin-top:14px;
     padding:20px 20px 24px;
-    background:rgba(2,6,14,.88);
-    pointer-events:none;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    box-sizing:border-box;
   }
   .decision-layer.active{
     display:flex;
-    pointer-events:auto;
   }
 
   .decision-alert{
@@ -488,17 +489,19 @@
 
   /* ---------- 結果層（依 verdict 套色：good / warn / bad） ---------- */
   .result-layer{
-    position:absolute; inset:0;
-    z-index:30;
     display:none;
     flex-direction:column;
     align-items:center;
-    justify-content:center;
     text-align:center;
+    width:100%;
+    max-width:920px;
+    margin-top:14px;
     padding:24px;
-    pointer-events:none;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    box-sizing:border-box;
   }
-  .result-layer.active{ display:flex; pointer-events:auto; }
+  .result-layer.active{ display:flex; }
 
   .result-layer.good{ background:rgba(6,20,14,.96); }
   .result-layer.warn{ background:radial-gradient(ellipse at 50% 40%, rgba(255,181,71,.22), rgba(10,8,2,.96) 70%); }
@@ -818,26 +821,30 @@
       </button>
 
       <div class="caption-overlay" id="captionOverlay" style="display:none;"></div>
+    </div>
 
-      <div class="decision-layer" id="decisionLayer">
-        <div class="decision-alert">偵測到異常 · 系統回應已中止</div>
-        <div class="decision-title" id="decisionTitle">畫面出現異常，你會怎麼做？</div>
-        <div class="decision-options" id="decisionOptions"></div>
-        <div class="decision-hint" id="decisionHint">影片已暫停，請點選其中一個選項以繼續</div>
-        <button class="btn primary decision-submit" id="btnSubmit" style="display:none;">送出作答</button>
-      </div>
+    <!-- 決策層／結果層改放在影片容器「外面、下方」，不再疊在16:9的.stage內部。
+         這樣選項再多、內容再長，高度都能自然撐開，不會被.stage的16:9比例和
+         overflow:hidden裁切掉——手機直向瀏覽時尤其重要，因為16:9容器本身
+         高度有限，裝不下多個選項時原本會被直接切掉。 -->
+    <div class="decision-layer" id="decisionLayer">
+      <div class="decision-alert">偵測到異常 · 系統回應已中止</div>
+      <div class="decision-title" id="decisionTitle">畫面出現異常，你會怎麼做？</div>
+      <div class="decision-options" id="decisionOptions"></div>
+      <div class="decision-hint" id="decisionHint">影片已暫停，請點選其中一個選項以繼續</div>
+      <button class="btn primary decision-submit" id="btnSubmit" style="display:none;">送出作答</button>
+    </div>
 
-      <div class="result-layer" id="resultLayer">
-        <div class="result-icon" id="resultIcon">✓</div>
-        <div class="result-tag" id="resultTag">應變正確</div>
-        <div class="result-title" id="resultTitle"></div>
-        <div class="result-log" id="resultLog" style="display:none;"></div>
-        <div class="result-body" id="resultBody"></div>
-        <div class="result-retry-hint" id="resultRetryHint">應變未通過，請重新演練這一關才能繼續</div>
-        <div class="result-actions">
-          <button class="btn retry" id="btnRetry">重新演練這一關</button>
-          <button class="btn primary" id="btnNext">下一關</button>
-        </div>
+    <div class="result-layer" id="resultLayer">
+      <div class="result-icon" id="resultIcon">✓</div>
+      <div class="result-tag" id="resultTag">應變正確</div>
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-log" id="resultLog" style="display:none;"></div>
+      <div class="result-body" id="resultBody"></div>
+      <div class="result-retry-hint" id="resultRetryHint">應變未通過，請重新演練這一關才能繼續</div>
+      <div class="result-actions">
+        <button class="btn retry" id="btnRetry">重新演練這一關</button>
+        <button class="btn primary" id="btnNext">下一關</button>
       </div>
     </div>
 
