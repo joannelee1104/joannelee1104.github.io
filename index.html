@@ -1163,6 +1163,58 @@ const SCENARIOS = [
 
   {
     video: "video-04.mp4",
+    hudLabel: "LIVE · ICU-MONITOR-07",
+    heroTitle: '隨身碟已經拿在手上了。<br>插下去之前，<span class="accent">你會先做什麼</span>？',
+    heroDesc: "外接裝置是資安破口最常見的入口之一。這一關是複選題，選出所有你認為正確的做法，全部勾對才算過關。",
+    checkpoints: [
+      {
+        segStart: 0,
+        time: 2.1,
+        title: "工程師準備把隨身碟插入醫療儀器前，關於這個動作，下列哪些做法是正確的？（複選，請選出所有正確答案）",
+        multiSelect: true,
+        options: [
+          {
+            key: "A",
+            label: "維修要緊，我的隨身碟不會有問題",
+            sub: "",
+            verdict: "bad"
+          },
+          {
+            key: "B",
+            label: "使用外接式裝置需要先到醫工課掃毒並登入掃毒結果",
+            sub: "",
+            verdict: "good"
+          },
+          {
+            key: "C",
+            label: "使用外接式裝置需告知單位同仁",
+            sub: "",
+            verdict: "good"
+          }
+        ],
+        // 複選題答錯（少選、多選、或選到錯誤選項）統一顯示這則結果文案
+        wrongResult: {
+          verdict: "bad",
+          resultTag: "違反資安規範",
+          resultTitle: "資安出現漏洞，醫院有被入侵可能性",
+          resultLog: [
+            "EXTERNAL DEVICE SCAN: <span>NOT CONFIRMED</span>",
+            "UNIT NOTIFICATION: <span>NOT CONFIRMED</span>",
+            "MALWARE RISK: <span>UNVERIFIED</span>",
+            "RISK LEVEL: <span>ELEVATED</span>"
+          ],
+          resultBody: "外接式裝置是資安破口最常見的入口之一。使用前必須先至醫工課完成掃毒並登錄結果，同時告知單位同仁知情，兩件事缺一不可——少了任何一步，都可能讓帶有惡意程式的裝置直接接觸醫療設備，危及院內系統安全。"
+        },
+        briefPoints: [
+          { mark:"→", tone:"correct", title:"建議做法：先掃毒登錄，並告知同仁", body:"外接式裝置使用前，務必先至醫工課完成掃毒並登錄結果，同時告知單位同仁，讓現場人員都掌握狀況。兩項動作都做到，才算真正落實資安規範。" },
+          { mark:"→", tone:"wrong", title:"常見誤區：覺得自己的隨身碟一定沒問題", body:"「維修要緊，隨身碟不會有問題」是最常見也最危險的僥倖心態。未經檢驗的外接裝置一旦帶有惡意程式，插入醫療儀器可能造成難以預料的資安風險。" }
+        ]
+      }
+    ]
+  },
+
+  {
+    video: "video-05.mp4",
     hudLabel: "LIVE · 病房維修區",
     heroTitle: '桌上這份文件，<br>不是隨便誰都能<span class="accent">看、拍、傳</span>的。',
     heroDesc: "維修設備時看到病人資料，是醫工人員很容易遇到的情境。這一關是複選題，選出所有你認為正確的做法，全部勾對才算過關。",
@@ -1639,7 +1691,8 @@ const SCENARIOS = [
     scenario3Q1Retry: 'entry.454428424',
     scenario3Q2Retry: 'entry.1979674176',
     scenario3Q3Retry: 'entry.1405083025',
-    scenario4Retry: 'entry.1756191457',
+    scenario4Retry: 'entry.1756191457',   // 現在的第4關：隨身碟掃毒複選題
+    scenario5Retry: 'PENDING_ENTRY_ID',   // 現在的第5關：病人隱私複選題，待新增表單欄位後填入正確代碼
     finishTime: 'entry.1415443966'
   };
 
@@ -1661,6 +1714,7 @@ const SCENARIOS = [
       [GOOGLE_FORM_ENTRIES.scenario3Q2Retry]: String(retryCounts[2][1]),
       [GOOGLE_FORM_ENTRIES.scenario3Q3Retry]: String(retryCounts[2][2]),
       [GOOGLE_FORM_ENTRIES.scenario4Retry]: String(retryCounts[3][0]),
+      [GOOGLE_FORM_ENTRIES.scenario5Retry]: String(retryCounts[4][0]),
       [GOOGLE_FORM_ENTRIES.finishTime]: finishTimeStr
     };
 
