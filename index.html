@@ -105,6 +105,11 @@
     letter-spacing:.06em;
     color:var(--text-mid);
   }
+  .login-field-hint{
+    color:var(--text-dim);
+    font-weight:400;
+    margin-left:4px;
+  }
   .login-field input{
     font-family:var(--sans);
     font-size:17px;
@@ -786,7 +791,7 @@
     <div class="login-card">
       <div class="login-tag">振興醫療財團法人振興醫院資安事件應變演練</div>
       <h1 class="login-title">開始測驗前，<br>請先留下你的資料</h1>
-      <p class="login-desc">完成四關演練後，系統會記錄你的作答狀況。請如實填寫，測驗結束後可自行寄送完成通知。</p>
+      <p class="login-desc">完成五關演練後，系統會記錄你的作答狀況。請如實填寫，測驗結束後可自行寄送完成通知。</p>
 
       <form id="loginForm" class="login-form">
         <label class="login-field">
@@ -801,9 +806,13 @@
           <span>Email</span>
           <input type="email" id="inputEmail" required placeholder="請輸入 Email" autocomplete="email">
         </label>
+        <label class="login-field">
+          <span>電話號碼<span class="login-field-hint">（可填本人手機或公司24小時緊急叫修專線）</span></span>
+          <input type="tel" id="inputPhone" required placeholder="請輸入電話號碼" autocomplete="tel">
+        </label>
         <button type="submit" class="btn primary login-submit">開始測驗</button>
       </form>
-      <div class="login-error" id="loginError" style="display:none;">請完整填寫姓名、公司與有效的 Email</div>
+      <div class="login-error" id="loginError" style="display:none;">請完整填寫姓名、公司、有效的 Email 與電話號碼</div>
     </div>
   </div>
 
@@ -1352,7 +1361,7 @@ const SCENARIOS = [
   const retryCounts = SCENARIOS.map(s => new Array(s.checkpoints.length).fill(0));
 
   // 測試者身份資訊，登入後才會填入
-  let learnerInfo = { name: '', company: '', email: '' };
+  let learnerInfo = { name: '', company: '', email: '', phone: '' };
   const startTime = new Date();
 
   function fmt(t){
@@ -1686,13 +1695,14 @@ const SCENARIOS = [
     name: 'entry.693859051',
     company: 'entry.2064044710',
     email: 'entry.1147737763',
+    phone: 'entry.357506504',
     scenario1Retry: 'entry.685164554',
     scenario2Retry: 'entry.1725002064',
     scenario3Q1Retry: 'entry.454428424',
     scenario3Q2Retry: 'entry.1979674176',
     scenario3Q3Retry: 'entry.1405083025',
-    scenario4Retry: 'entry.1756191457',   // 現在的第4關：隨身碟掃毒複選題
-    scenario5Retry: 'PENDING_ENTRY_ID',   // 現在的第5關：病人隱私複選題，待新增表單欄位後填入正確代碼
+    scenario4Retry: 'entry.1134961654',   // 第6題：使用外接式裝置先掃毒重測次數（現在的第4關：隨身碟掃毒複選題）
+    scenario5Retry: 'entry.1756191457',   // 第7題：病人隱私重測次數（現在的第5關：病人隱私複選題）
     finishTime: 'entry.1415443966'
   };
 
@@ -1708,6 +1718,7 @@ const SCENARIOS = [
       [GOOGLE_FORM_ENTRIES.name]: learnerInfo.name,
       [GOOGLE_FORM_ENTRIES.company]: learnerInfo.company,
       [GOOGLE_FORM_ENTRIES.email]: learnerInfo.email,
+      [GOOGLE_FORM_ENTRIES.phone]: learnerInfo.phone,
       [GOOGLE_FORM_ENTRIES.scenario1Retry]: String(retryCounts[0][0]),
       [GOOGLE_FORM_ENTRIES.scenario2Retry]: String(retryCounts[1][0]),
       [GOOGLE_FORM_ENTRIES.scenario3Q1Retry]: String(retryCounts[2][0]),
@@ -1760,6 +1771,7 @@ const SCENARIOS = [
 `姓名：${learnerInfo.name}
 公司：${learnerInfo.company}
 Email：${learnerInfo.email}
+電話：${learnerInfo.phone}
 完成關卡：${correctCount} / ${TOTAL}
 完成時間：${new Date().toLocaleString('zh-TW', { hour12:false })}
 
@@ -1805,21 +1817,25 @@ Email：${learnerInfo.email}
   const inputName = document.getElementById('inputName');
   const inputCompany = document.getElementById('inputCompany');
   const inputEmail = document.getElementById('inputEmail');
+  const inputPhone = document.getElementById('inputPhone');
 
   loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = inputName.value.trim();
     const company = inputCompany.value.trim();
     const email = inputEmail.value.trim();
+    const phone = inputPhone.value.trim();
     const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    if(!name || !company || !emailValid){
+    // 電話號碼只檢查是否有填寫，不做嚴格格式驗證，
+    // 因為允許填寫本人手機或公司24小時緊急叫修專線，格式可能不同（含分機、市話等）
+    if(!name || !company || !emailValid || !phone){
       loginError.style.display = 'block';
       return;
     }
 
     loginError.style.display = 'none';
-    learnerInfo = { name, company, email };
+    learnerInfo = { name, company, email, phone };
     loginScreen.classList.add('hidden');
 
     // 登入完成才真正開始播放第一關，避免測試者身份資料還沒填就開始計入重考次數
