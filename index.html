@@ -810,6 +810,10 @@
           <span>電話號碼<span class="login-field-hint">（可填本人手機或公司24小時緊急叫修專線）</span></span>
           <input type="tel" id="inputPhone" required placeholder="請輸入電話號碼" autocomplete="tel">
         </label>
+        <label class="login-field">
+          <span>LINE ID<span class="login-field-hint">（選填，可讓使用單位快速聯繫您）</span></span>
+          <input type="text" id="inputLineId" placeholder="請輸入 LINE ID（選填）">
+        </label>
         <button type="submit" class="btn primary login-submit">開始測驗</button>
       </form>
       <div class="login-error" id="loginError" style="display:none;">請完整填寫姓名、公司、有效的 Email 與電話號碼</div>
@@ -1361,7 +1365,7 @@ const SCENARIOS = [
   const retryCounts = SCENARIOS.map(s => new Array(s.checkpoints.length).fill(0));
 
   // 測試者身份資訊，登入後才會填入
-  let learnerInfo = { name: '', company: '', email: '', phone: '' };
+  let learnerInfo = { name: '', company: '', email: '', phone: '', lineId: '' };
   const startTime = new Date();
 
   function fmt(t){
@@ -1818,6 +1822,7 @@ Email：${learnerInfo.email}
   const inputCompany = document.getElementById('inputCompany');
   const inputEmail = document.getElementById('inputEmail');
   const inputPhone = document.getElementById('inputPhone');
+  const inputLineId = document.getElementById('inputLineId');
 
   loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -1825,6 +1830,7 @@ Email：${learnerInfo.email}
     const company = inputCompany.value.trim();
     const email = inputEmail.value.trim();
     const phone = inputPhone.value.trim();
+    const lineId = inputLineId.value.trim();
     const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
     // 電話號碼只檢查是否有填寫，不做嚴格格式驗證，
@@ -1835,7 +1841,7 @@ Email：${learnerInfo.email}
     }
 
     loginError.style.display = 'none';
-    learnerInfo = { name, company, email, phone };
+    learnerInfo = { name, company, email, phone, lineId };
     loginScreen.classList.add('hidden');
 
     // 登入完成才真正開始播放第一關，避免測試者身份資料還沒填就開始計入重考次數
